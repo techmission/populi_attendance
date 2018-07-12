@@ -1,7 +1,7 @@
 <?php
 
 // Script modes
-define('MODE_DEBUG', 1);  // debugging lines - break execution at breakpoints
+define('MODE_DEBUG', 1);  // debugging lines in log
 define('MODE_DEFAULT', 0); // no debugging lines
 
 // Log levels for messages

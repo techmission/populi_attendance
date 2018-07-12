@@ -1,3 +1,9 @@
+# Apache
+.htaccess
+# app
 logs
 settings/connection.inc
 settings/api_settings.inc
+# used for Twig
+vendor
+twig_cache

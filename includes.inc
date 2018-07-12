@@ -17,8 +17,8 @@
   
   // PDO functions
   require_once $base_path . '/lib/pdo/pdo.inc';
-  // Populi functions
-  require_once $base_path . '/lib/populi/populi.inc';
-  require_once $base_path . '/lib/populi/populi_methods.inc';
+  // Populi functions (commented out for now)
+  //require_once $base_path . '/lib/populi/populi.inc';
+  //require_once $base_path . '/lib/populi/populi_methods.inc';
   // Logging functions
   require_once $base_path . '/lib/logging/logging.inc';

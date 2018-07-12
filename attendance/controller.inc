@@ -3,60 +3,50 @@
 /* File with the main business logic that builds the transcript page and the error page */
 
 /* Includes all the rest of the needed files. */
-function transcript_bootstrap() {
+function bootstrap() {
   global $TWIG;
   // Add Twig.
+  // TODO: Confirm this is the proper location for Twig.
   require_once('vendor/autoload.php');
   $loader = new Twig_Loader_Filesystem('templates');
   // Added auto_reload for debugging
   $TWIG = new Twig_Environment($loader, array('cache' => 'twig_cache', 'auto_reload' => TRUE));
   
   // Add includes for this codebase
-  require_once('../includes.inc')       // Populi API integration framework
+  require_once('../includes.inc')       // PDO and logging class (maybe Populi)
   require_once('lib.inc');              // utility functions (maybe unneeded)
   require_once('constants.inc');        // defines constants
-  require_once('settings.inc');         // defines settings that can change
-  require_once('term_dates.inc');       // defines dates of terms
+  require_once('settings.inc');         // defines settings that can change - script wide
   require_once('queries.inc');          // wrapper functions for querying
   require_once('process.inc');          // processes the transcript data
 
-  // Connect to Populi
-  global $POPULI;
-  $POPULI = new Populi();
-  // Use default login credentials
-  $POPULI->login();
 }
 
 /* Function to build the transcript page */
 function build_transcript_data() {
   $transcript_data = array();
-  $student_id = '';
+  $personid = '';
   $output = '';
-  if(!empty($_GET['FirstName'] && $_GET['LastName'])) {
-    $student_id = get_student_id(QUERY_STUDENTNAME, array('FirstName' => $_GET['FirstName'], 'LastName' => $_GET['LastName']));
+  if(!empty($_GET['firstname'] && $_GET['LastName'])) {
+    $personid = get_personid($_GET['firstname'], $_GET['lastname');
+	// TODO: more robust checking in is_populi_id
    if(!is_populi_id($student_id)) {
-     build_error_page(ERROR_CONTACT_NOT_FOUND, array('FirstName' => $_GET['FirstName'], 'LastName' => $_GET['LastName'], 'student_id' => $student_id));
+     build_error_page(ERROR_CONTACT_NOT_FOUND, array('firstname' => $_GET['firstname'], 'lastname' => $_GET['lastname'], 'personid' => $personid));
    }
   }
-  else if(!empty($_GET['Email'])) {
-    $student_id = get_student_id(QUERY_EMAIL, array('Email' => $_GET['Email']));
-    if(!is_populi_id($student_id)) {
-      build_error_page(ERROR_CONTACT_NOT_FOUND, array('Email' => $_GET['Email'], 'student_id' => $student_id));
-    }
-  }  
-  else if(!empty($_GET['Student_Id']) && is_sfid($_GET['Student_Id'])) {
-    $student_id = $_GET['Id'];
-  }
   else {
-    build_error_page(ERROR_INVALID_INPUT, array('_GET' => $_GET));
+	// sanitized version of $_GET array: http://php.net/manual/en/function.filter-var-array.php
+	$get_array_sanitized = filter_var_array($_GET, FILTER_SANITIZE_STRING);
+    build_error_page(ERROR_INVALID_INPUT, array('get_params' => $get_array_sanitized);
   }
   
-  $transcript_data = get_transcript_data($student_id);
-  if(is_transcript_valid($transcript_data)) {
+  $transcript_data = get_transcript_data($personid);
+  // TODO: more robust checking in is_transcript_data_valid
+  if(is_transcript_data_valid($transcript_data)) {
     return process_transcript_data($transcript_data);
   }
   else {
-    build_error_page(ERROR_INVALID_TRANSCRIPT, array('transcript_data' => $transcript_data));
+    build_error_page(ERROR_INVALID_DATA, array('transcript_data' => $transcript_data));
   }
 }
 
@@ -64,9 +54,9 @@ function build_transcript_data() {
 function build_error_page($error_msg, $vars) {
   global $TWIG;
   $template = $TWIG->load('error.html');
+  // get a rendered array of the vars as a variable to show
   $vars_dump = print_r($vars, TRUE);
   echo $template->render(array('error_msg' => $error_msg, 'vars' => $vars, 'vars_dump' => $vars_dump, 'log_mode' => LOG_MODE));
-  // TODO: add the logging from the Populi framework here
-  // needs to be adjusted to be configurable in which log file it uses
+  script_log($error_msg, LEVEL_ERROR);
   exit(-1);
 }
