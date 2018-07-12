@@ -1,26 +1,28 @@
 <?php
 
 /* Main business logic function: queries Salesforce and populates the attendance data array */
-function get_attendance_data($personid) {
+function get_attendance_data($personid, $firstname, $lastname) {
   $attendance_data = array();
+  $attendance_data['firstname'] = $firstname;
+  $attendance_data['lastname'] = $lastname;
   
   // Step 1: Get terms in which person was enrolled
   // This will be the base level of the attendance data array
   $terms = get_terms_by_person($personid);
   if(is_array($terms)) {
-	$attendance_data = $terms;
+	$attendance_data['terms'] = $terms;
   }
   
   // Step 2: For each term, get the courses, and add to array
-  foreach($attendance_data as $termid => $term) {
+  foreach($attendance_data['terms'] as $termid => $term) {
 	$courses = get_courses_by_term($personid, $termid);
-    $attendance_data[$termid] = $courses;
+    $attendance_data['terms'][$termid]['courses'] = $courses;
 	//  Step 3: For each course, get the lessons, and add to array
-	foreach($attendance_data[$termid] as $courseid => $courses) {
+	foreach($attendance_data['terms'][$termid]['courses'] as $courseid => $courses) {
 	  $lessons = get_lessons_by_course($courseid);
-	  $attendance_data[$termid][$courseid] = $lessons;
+	  $attendance_data['terms'][$termid]['courses'][$courseid]['lessons'] = $lessons;
 	  // Step 4: For each lesson get the assignments and add to array
-	  foreach($attendance_data[$termid][$courseid] as $lessonid => $lessons) {
+	  foreach($attendance_data['terms'][$termid]['courses'][$courseid]['lessons'] as $lessonid => $lessons) {
 	    $assignments = get_assignments_by_lessons($lessonid);
 		 // Step 5: For each assignment, get the submission info and add to array
 	    foreach($assignments as $assignmentid => $assignment) {
@@ -29,7 +31,7 @@ function get_attendance_data($personid) {
 		  // https://stackoverflow.com/questions/3292044
 		  $assignments[$assignmentid] = $assignments[$assignmentid] + $submission_info;
 		}
-	    $attendance_data[$termid][$courseid][$lessonid] = $assignments;
+	    $attendance_data['terms'][$termid]['courses'][$courseid]['lessons'][$lessonid]['assignments'] = $assignments;
 	  }
 	}
   }

@@ -42,7 +42,7 @@ function build_attendance_data() {
     build_error_page(ERROR_INVALID_INPUT, array('get_params' => $get_array_sanitized);
   }
   
-  $attendance_data = get_attendance_data($personid);
+  $attendance_data = get_attendance_data($personid, $_GET['firstname'], $_GET['lastname']);
   // TODO: more robust checking in is_attendance_data_valid
   if(is_attendance_data_valid($attendance_data)) {
     return $attendance_data;
