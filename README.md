@@ -1,23 +1,15 @@
 Explanation
 ===========
-A generalized framework for use of the Populi API in PHP,
-with various implementations.
-
-Tagger
-------
-Uses the Populi API to tag students with a predefined set of tags.
-
-Requires a local database to be set up, which it queries
-to determine which students to update.
+Queries a local copy of the Populi database to render a record of the 
+student's attendance in a given set of terms.
 
 Creator
 =======
 Evan Donovan, for TechMission / City Vision University
-Populi base code courtesy of Populi documentation.
 
 License
 =======
-Code from this project may be reused, with prior permission.
+GNU GPL v2
 
 Testing
 =======
