@@ -26,7 +26,7 @@ Will fetch an HTML page showing a student's attendance from a Populi database.
 
 Example:
 
-wkhtmltopdf http://www.cityvision.edu/populi_attendance/attendance/activity_report.php?firstname=firstname&lastname=&key={GUID} 8-LNAME,FNAME.pdf
+`wkhtmltopdf http://www.cityvision.edu/populi_attendance/attendance/activity_report.php?firstname=firstname&lastname=&key={GUID} 8-LNAME,FNAME.pdf`
 
 (This requires wkhtmltopdf to be installed on Linux.)
 
