@@ -6,7 +6,8 @@
 </head>
 <body>
 <p>{{ error_msg }}</p>
-{% if log_mode == 0 or log_mode == 1 %}
+<!-- Dump variables here if logging mode is set to debug -->
+{% if log_mode == 1 %}
 <pre>{{ vars_dump }}</pre>
 {% endif %}
 </body>

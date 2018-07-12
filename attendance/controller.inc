@@ -1,10 +1,12 @@
 <?php
 
-/* File with the main business logic that builds the transcript page and the error page */
+/* File with the main business logic that builds the attendance page and the error page */
 
 /* Includes all the rest of the needed files. */
 function bootstrap() {
   global $TWIG;
+  global $DB;
+  
   // Add Twig.
   // TODO: Confirm this is the proper location for Twig.
   require_once('vendor/autoload.php');
@@ -14,23 +16,23 @@ function bootstrap() {
   
   // Add includes for this codebase
   require_once('../includes.inc')       // PDO and logging class (maybe Populi)
-  require_once('lib.inc');              // utility functions (maybe unneeded)
   require_once('constants.inc');        // defines constants
   require_once('settings.inc');         // defines settings that can change - script wide
-  require_once('queries.inc');          // wrapper functions for querying
-  require_once('process.inc');          // processes the transcript data
-
+  require_once('queries.inc');          // the queries that build the attendance data array - main business logic
+  
+  // Connect to database using PDO
+  $DB = db_connect();
 }
 
-/* Function to build the transcript page */
-function build_transcript_data() {
-  $transcript_data = array();
+/* Function to build the attendance page */
+function build_attendance_data() {
+  $attendance_data = array();
   $personid = '';
   $output = '';
   if(!empty($_GET['firstname'] && $_GET['LastName'])) {
     $personid = get_personid($_GET['firstname'], $_GET['lastname');
 	// TODO: more robust checking in is_populi_id
-   if(!is_populi_id($student_id)) {
+   if(!is_populi_id($personid)) {
      build_error_page(ERROR_CONTACT_NOT_FOUND, array('firstname' => $_GET['firstname'], 'lastname' => $_GET['lastname'], 'personid' => $personid));
    }
   }
@@ -40,13 +42,13 @@ function build_transcript_data() {
     build_error_page(ERROR_INVALID_INPUT, array('get_params' => $get_array_sanitized);
   }
   
-  $transcript_data = get_transcript_data($personid);
-  // TODO: more robust checking in is_transcript_data_valid
-  if(is_transcript_data_valid($transcript_data)) {
-    return process_transcript_data($transcript_data);
+  $attendance_data = get_attendance_data($personid);
+  // TODO: more robust checking in is_attendance_data_valid
+  if(is_attendance_data_valid($attendance_data)) {
+    return $attendance_data;
   }
   else {
-    build_error_page(ERROR_INVALID_DATA, array('transcript_data' => $transcript_data));
+    build_error_page(ERROR_INVALID_DATA, array('attendance_data' => $attendance_data));
   }
 }
 
