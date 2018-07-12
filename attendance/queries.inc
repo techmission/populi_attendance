@@ -1,24 +1,148 @@
 <?php
 
 /* Main business logic function: queries Salesforce and populates the attendance data array */
-function get_attendance_data($student_id) {
-  // Create empty shell of array
-  // NOTE: Would be better as class but would take longer to code
-  $attendance_data = build_attendance_data_array();
-
+function get_attendance_data($personid) {
+  $attendance_data = array();
+  
+  // Step 1: Get terms in which person was enrolled
+  // This will be the base level of the attendance data array
+  $terms = get_terms_by_person($personid);
+  if(is_array($terms)) {
+	$attendance_data = $terms;
+  }
+  
+  // Step 2: For each term, get the courses, and add to array
+  foreach($attendance_data as $termid => $term) {
+	$courses = get_courses_by_term($personid, $termid);
+    $attendance_data[$termid] = $courses;
+	//  Step 3: For each course, get the lessons, and add to array
+	foreach($attendance_data[$termid] as $courseid => $courses) {
+	  $lessons = get_lessons_by_course($courseid);
+	  $attendance_data[$termid][$courseid] = $lessons;
+	  // Step 4: For each lesson get the assignments and add to array
+	  foreach($attendance_data[$termid][$courseid] as $lessonid => $lessons) {
+	    $assignments = get_assignments_by_lessons($lessonid);
+		 // Step 5: For each assignment, get the submission info and add to array
+	    foreach($assignments as $assignmentid => $assignment) {
+	      $submission_info = get_assignment_submission_info($assignmentid, $personid);
+		  // add the array of assignment info and submission info together, preserving keys
+		  // https://stackoverflow.com/questions/3292044
+		  $assignments[$assignmentid] = $assignments[$assignmentid] + $submission_info;
+		}
+	    $attendance_data[$termid][$courseid][$lessonid] = $assignments;
+	  }
+	}
+  }
+  
   return $attendance_data;
 }
 
-/* Step 0: Looks up a Populi student record based on either email 
-   or first name + last name */
+/* Step 0: Get a Populi student ID based on firstname and lastname */
 function get_personid($firstname, $lastname) {
+  global $DB;
   $personid = NULL;
   // pdo query
+  try {
+    $stmt = $db->query($qry);
+    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+  }
+  catch(PDOException $ex) {
+    script_log($ex->getMessage(), LEVEL_ERROR);
+  }
   return $personid;
 }
 
+/* Step 1: Get terms in which person was enrolled */
+function get_terms_by_person($personid) {
+  // pdo query
+  try {
+    $stmt = $db->query($qry);
+    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+  }
+  catch(PDOException $ex) {
+    script_log($ex->getMessage(), LEVEL_ERROR);
+  }
+  // array with termids as keys and names as values, sorted chronologically
+  return $terms;
+}
 
-/* Utility functions */
+/* Step 2: For each term, get the courses */
+function get_courses_by_term($personid, $termid) {
+  // pdo query
+  try {
+    $stmt = $db->query($qry);
+    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+  }
+  catch(PDOException $ex) {
+    script_log($ex->getMessage(), LEVEL_ERROR);
+  }
+  // array of courses with courseids as keys, sorted by name
+  return $courses;
+}
+
+/* Step 3: For each course, get the lessons */
+function get_lessons_by_course($courseid) {
+  // pdo query
+  try {
+    $stmt = $db->query($qry);
+    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+  }
+  catch(PDOException $ex) {
+    script_log($ex->getMessage(), LEVEL_ERROR);
+  }
+  // array of lessons with lesson ids as keys, with names, sorted by order in course
+  return $lessons;
+}
+
+/* Step 4: For each lesson get the assignments */
+function get_assignments_by_lesson($lessonid) {
+  // pdo query
+  try {
+    $stmt = $db->query($qry);
+    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+  }
+  catch(PDOException $ex) {
+    script_log($ex->getMessage(), LEVEL_ERROR);
+  }	
+  // array of assignments, with names, sorted by order in lesson
+  return $assignments;
+}
+
+/* Step 5: For each assignment, get the submission info  */
+function get_assignment_submission_info($assignmentid, $personid) {
+  // 1. get submission dates
+  // if forum, get submission dates from discussion table
+  if($assignment['type'] == 'DISCUSSION') {
+    // pdo queries
+	try {
+      $stmt = $db->query($qry);
+      $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    catch(PDOException $ex) {
+      script_log($ex->getMessage(), LEVEL_ERROR);
+    }
+  }
+  else {
+    // pdo queries (from either my report, or probably directly to the assignment_submissions table)
+	try {
+      $stmt = $db->query($qry);
+      $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    catch(PDOException $ex) {
+      script_log($ex->getMessage(), LEVEL_ERROR);
+    }
+  }
+  // 2. format the dates, or put in “--” if none
+  // 3. Get the grades on the submissions (if there are submissions)
+  //     Put in “--” if no submission, or no grade (for now, don’t differentiate between those cases)
+  return $submission_info;  // this array will be merged back into the assignment array
+}
+
+
+
+/**
+  Utility functions 
+ */
 
 /* Validates whether data is in the correct format to render */
 function is_attendance_data_valid($attendance_data) {
@@ -32,10 +156,13 @@ function is_attendance_data_valid($attendance_data) {
   // for overall data
 }
 
-/* Creates shell of attendance data array */
-function build_attendance_data_array() {
-  $attendance_data = array();
-  $attendance_data['terms'] = array();
-  return $attendance_data;
+/* Validates a Populi ID */
+function is_populi_id($id) {
+  if(is_numeric($id) && $id > 0) {
+	return TRUE;
+  }
+  else {
+	return FALSE;
+  }
 }
 
