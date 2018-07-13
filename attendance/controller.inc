@@ -6,7 +6,13 @@
 function bootstrap() {
   global $TWIG;
   global $DB;
-  
+
+  // Add includes for this codebase
+  require_once('../includes.inc');      // PDO and logging classes (not Populi at the moment)
+  require_once('constants.inc');        // defines constants
+  require_once('settings.inc');         // defines settings that can change - script wide
+  require_once('queries.inc');          // the queries that build the attendance data array - main business logic
+
   // Add Twig.
   require_once('vendor/autoload.php');
   $loader = new Twig_Loader_Filesystem('templates');
@@ -19,17 +25,10 @@ function bootstrap() {
   }
   $TWIG = new Twig_Environment($loader, array('cache' => $twig_cache_dir, 'auto_reload' => TRUE));
   $TWIG = new Twig_Environment($loader, array('cache' => 'twig_cache', 'auto_reload' => TRUE));
- 
- 
-  // Add includes for this codebase
-  require_once('../includes.inc');      // PDO and logging classes (not Populi at the moment)
-  require_once('constants.inc');        // defines constants
-  require_once('settings.inc');         // defines settings that can change - script wide
-  require_once('queries.inc');          // the queries that build the attendance data array - main business logic
-  
+
   // Connect to database using PDO
   $DB = db_connect();
-  
+
   // add a custom exception handler to make PDO exceptions go to the log
   // see https://phpdelusions.net/delusion/try-catch
   set_exception_handler('custom_exception_handler');
@@ -40,7 +39,7 @@ function build_attendance_data() {
   $attendance_data = array();
   $personid = '';
   $output = '';
-  if(!empty($_GET['firstname'] && $_GET['LastName'])) {
+  if(!empty($_GET['firstname'] && $_GET['lastname'])) {
     $personid = get_personid($_GET['firstname'], $_GET['lastname']);
     // TODO: more robust checking in is_populi_id
     if(!is_populi_id($personid)) {
