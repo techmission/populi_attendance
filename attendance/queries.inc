@@ -48,7 +48,7 @@ function get_personid($firstname, $lastname) {
   $stmt = $DB->prepare($qry);
   log_query($qry, array('firstname' => $firstname, 'lastname' => $lastname));
   $stmt->bindValue(':firstname', $firstname, PDO::PARAM_STR);
-  $stmt->bindValue(':lastname', $firstname, PDO::PARAM_STR);
+  $stmt->bindValue(':lastname', $lastname, PDO::PARAM_STR);
   $stmt->execute();
   // fetch a single datum
   $personid = $stmt->fetchColumn();
@@ -90,8 +90,8 @@ ORDER BY c.name asc
 EOT;
   $stmt = $DB->prepare($qry);
   log_query($qry, array('personid' => $personid, 'termid' => $termid));
-  $stmt->bindValue(':personid', $firstname, PDO::PARAM_INT);
-  $stmt->bindValue(':termid', $firstname, PDO::PARAM_INT);
+  $stmt->bindValue(':personid', $personid, PDO::PARAM_INT);
+  $stmt->bindValue(':termid', $termid, PDO::PARAM_INT);
   $stmt->execute();
   // fetch array of courses with courseids as keys, with names, sorted by name
   $courses = $stmt->fetchAll(PDO::FETCH_UNIQUE);
