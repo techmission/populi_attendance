@@ -77,6 +77,9 @@ function build_error_page($error_msg, $vars) {
   }
   $twig_vars = array('error_msg' => $error_msg, 'log_mode' => $log_mode);
   if(isset($vars['error_info'])) {
+	if(is_array($vars['error_info'])) {
+	  $vars['error_info'] = print_r($vars['error_info'], TRUE);
+	}
     $twig_vars['error_info'] = $vars['error_info'];
 	unset($vars['error_info']);
   }
