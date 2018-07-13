@@ -43,7 +43,7 @@ function build_attendance_data() {
     $personid = get_personid($_GET['firstname'], $_GET['lastname']);
     // TODO: more robust checking in is_populi_id
     if(!is_populi_id($personid)) {
-      build_error_page(ERROR_CONTACT_NOT_FOUND, array('firstname' => $_GET['firstname'], 'lastname' => $_GET['lastname'], 'personid' => $personid));
+      build_error_page(ERROR_STUDENT_NOT_FOUND, array('firstname' => $_GET['firstname'], 'lastname' => $_GET['lastname'], 'personid' => $personid));
     }
   }
   else {

@@ -108,6 +108,7 @@ GROUP BY l.lessonid
 ORDER BY l.orderid ASC;
 EOT;
   $stmt = $DB->prepare($qry);
+  log_query($query, array($courseid));
   $stmt->bindValue(':courseid', $courseid, PDO::PARAM_INT);
   $stmt->execute();
   // fetch array
@@ -127,6 +128,7 @@ WHERE lessonid = :lessonid AND status = 'ACTIVE' AND type NOT IN ('ATTENDANCE', 
 ORDER BY orderid ASC, name ASC, timedue ASC
 EOT;
   $stmt = $DB->prepare($qry);
+  log_query($query, array($lessonid));
   $stmt->bindValue(':lessonid', $lessonid, PDO::PARAM_INT);
   $stmt->execute();
   // fetch array
@@ -150,6 +152,7 @@ select f.topic_id, min(f.added_at) as min_added_time, max(f.added_at) as max_add
  where f.assignment_id = :assignmentid and fc.added_by = :personid and fc.parent_comment_id = 0 group by f.assignment_id
 EOT;
     $stmt = $DB->prepare($qry);
+	log_query($query, array($assignmentid, $personid));
     $stmt->bindValue(':assignmentid', $assignmentid, PDO::PARAM_INT);
     $stmt->bindValue(':personid', $personid, PDO::PARAM_INT);
     $stmt->execute();
@@ -175,6 +178,7 @@ EOT;
 select g.grade from course_grades g where g.assignmentid = :assignmentid and g.studentid = :personid
 EOT;
   $stmt = $DB->prepare($qry);
+  
   $stmt->bindValue(':assignmentid', $assignmentid, PDO::PARAM_INT);
   $stmt->bindValue(':personid', $personid, PDO::PARAM_INT);
   $stmt->execute();

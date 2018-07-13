@@ -24,3 +24,24 @@ function custom_exception_handler($ex) {
     echo '<p>A fatal error has occurred.</p>';
   }
 }
+
+/* Get the actual query that was run - for debugging
+   from https://stackoverflow.com/questions/210564/getting-raw-sql-query-string-from-pdo-prepared-statements */
+function log_query($query, $params) {
+    $keys = array();
+
+    // build a regular expression for each parameter
+    foreach ($params as $key => $value) {
+        if (is_string($key)) {
+            $keys[] = '/:'.$key.'/';
+        } else {
+            $keys[] = '/[?]/';
+        }
+    }
+
+    $query = preg_replace($keys, $params, $query, 1, $count);
+
+    if(LOG_MODE == MODE_DEBUG) {
+      script_log($query, LEVEL_DEBUG);
+    }
+}
