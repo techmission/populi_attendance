@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>8 - {{a.lastname|capitalize }}, {{a.firstname|capitalize}} Course Attendance Documentation</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<h1>{{a.lastname|capitalize }}, {{a.firstname|capitalize}} Course Attendance Documentation</h1>
+
+{% if a.terms is not empty %}
+	{% for term in a.terms %}
+		<h2>{{ term.name }}</h2>
+		{% if term.courses is not empty %}
+			{% for course in term.courses %}
+				<h3>{{ course.name }}</h3>
+				{% if course.lessons is not empty %}
+					{% for lesson in course.lessons %}
+						{% if lesson.assignments is not empty %}
+							<table class="courses">
+							<tr><th class="course-name" colspan="3">{{ lesson.name }}</th></tr>
+                            <tr><td></td><td></td><td></td></tr>
+							</table>
+						{% endif %}
+					{% endfor %}
+				{% endif %}
+			{% endfor %}
+		{% endif %}
+	{% endfor %}
+{% endif %}
+
+<!-- if set to debug show the full attendance array -->
+{% if constant('LOG_MODE') is constant('MODE_DEBUG') %}
+	<h2>Attendance Array</h2>
+	<pre>
+	{{ a_pre }}
+	</pre>
+{% endif %}
+<!-- Dump twig variables here if set to debug twig -->
+{% if constant('DEBUG_TWIG') == TRUE %}
+<h2>Twig Debug</h2>
+<pre>{{ vars }}</pre>
+{% endif %}
+
+</body>
+</html>
