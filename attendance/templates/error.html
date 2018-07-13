@@ -7,8 +7,14 @@
 <body>
 <h1>Error</h1>
 <p>{{ error_msg }}</p>
-<!-- Dump variables here if logging mode is set to debug -->
-{% if constant('LOG_MODE') is constant('MODE_DEBUG') %}
+<!-- Dump error info if there is more and set to debug -->
+{% if constant('LOG_MODE') is constant('MODE_DEBUG') and error_info is defined %}
+<h2>Error Info</h2>
+<pre>{{ error_info }}</pre>
+{% endif %}
+<!-- Dump twig variables here if set to debug twig -->
+{% if constant('DEBUG_TWIG') == TRUE %}
+<h2>Twig Debug</h2>
 <pre>{{ vars_dump }}</pre>
 {% endif %}
 </body>

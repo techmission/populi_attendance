@@ -28,7 +28,7 @@ function custom_exception_handler($ex) {
   global $TWIG;
   header('HTTP/1.1 500 Internal Server Error', TRUE, 500);
   script_log($ex->getMessage(), LEVEL_ERROR);
-  build_error_page(ERROR_EXCEPTION, array('exception' => $ex));
+  build_error_page(ERROR_EXCEPTION, array('error_info' => $ex));
 }
 
 /* set with set_exception_handler('error_page_handler') */

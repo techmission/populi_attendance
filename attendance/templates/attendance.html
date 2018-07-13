@@ -35,15 +35,17 @@
 	{% endfor %}
 {% endif %}
 
+<!-- if set to debug show the full attendance array -->
 {% if constant('LOG_MODE') is constant('MODE_DEBUG') %}
 	<h2>Attendance Array</h2>
 	<pre>
 	{{ a_pre }}
 	</pre>
-	<h2>Debugging Vars</h2>
-	<pre>
-	{{ vars }}
-	</pre>
+{% endif %}
+<!-- Dump twig variables here if set to debug twig -->
+{% if constant('DEBUG_TWIG') == TRUE %}
+<h2>Twig Debug</h2>
+<pre>{{ vars }}</pre>
 {% endif %}
 
 </body>
