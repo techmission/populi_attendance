@@ -16,7 +16,7 @@
 				<h3>{{ course.name }}</h3>
 				{% if course.lessons is not empty %}
 					{% for lesson in course.lessons %}
-					   {{ lesson.name }}
+					    <h3>{{ lesson.name }}</h3>
 					{% endfor %}
 				{% endif %}
 			{% endfor %}
