@@ -23,14 +23,15 @@ function get_attendance_data($personid, $firstname, $lastname) {
       $attendance_data['terms'][$termid]['courses'][$courseid]['lessons'] = $lessons;
       // Step 4: For each lesson get the assignments and add to array
       foreach($attendance_data['terms'][$termid]['courses'][$courseid]['lessons'] as $lessonid => $lessons) {
-        $assignments = get_assignments_by_lesson($lessonid);
+        /* $assignments = get_assignments_by_lesson($lessonid);
          // Step 5: For each assignment, get the submission info and add to array
         foreach($assignments as $assignmentid => $assignment) {
           $submission_info = get_assignment_submission_info($assignmentid, $assignment['type'], $personid);
           // add the array of assignment info and submission info together, preserving keys
           // https://stackoverflow.com/questions/3292044
           $assignments[$assignmentid] = $assignments[$assignmentid] + $submission_info;
-        }
+        } */
+		$assignments = array(1, 2);
         $attendance_data['terms'][$termid]['courses'][$courseid]['lessons'][$lessonid]['assignments'] = $assignments;
       }
     }
