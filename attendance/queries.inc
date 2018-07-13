@@ -46,7 +46,7 @@ function get_personid($firstname, $lastname) {
   // pdo query (checked)
   $qry = 'SELECT personid FROM mv_students_1718 WHERE firstname = :firstname AND lastname = :lastname LIMIT 1';  
   $stmt = $DB->prepare($qry);
-  log_query($qry, array($firstname, $lastname));
+  log_query($qry, array('firstname' => $firstname, 'lastname' => $lastname));
   $stmt->bindValue(':firstname', $firstname, PDO::PARAM_STR);
   $stmt->bindValue(':lastname', $firstname, PDO::PARAM_STR);
   $stmt->execute();
