@@ -47,8 +47,8 @@ function get_personid($firstname, $lastname) {
   $qry = 'SELECT personid FROM mv_students_1718 WHERE firstname = :firstname AND lastname = :lastname LIMIT 1';  
   $stmt = $DB->prepare($qry);
   log_query($qry, array('firstname' => $firstname, 'lastname' => $lastname));
-  $stmt->bindValue(':firstname', $firstname, PDO::PARAM_STR);
-  $stmt->bindValue(':lastname', $lastname, PDO::PARAM_STR);
+  $stmt->bindValue('firstname', $firstname, PDO::PARAM_STR);
+  $stmt->bindValue('lastname', $lastname, PDO::PARAM_STR);
   $stmt->execute();
   // fetch a single datum
   $personid = $stmt->fetchColumn();
@@ -60,19 +60,18 @@ function get_terms_by_person($personid) {
   global $DB;
   // pdo query (checked)
   $terms = NULL;
-  /* $qry = <<<EOT
+  $qry = <<<EOT
 SELECT c.termid, c.term_name AS name FROM mv_courses_1718 c 
 JOIN mv_enrollments_1718 e ON c.instanceid = e.instanceid JOIN mv_students_1718 s ON s.personid = e.studentid 
 WHERE s.personid = :personid 
 GROUP BY c.termid 
 ORDER BY c.term_start_date ASC
-EOT; */
-  $qry = "SELECT c.termid, c.term_name AS name FROM mv_courses_1718 c JOIN mv_enrollments_1718 e ON c.instanceid = e.instanceid JOIN mv_students_1718 s ON s.personid = e.studentid WHERE s.personid = :personid GROUP BY c.termid ORDER BY c.term_start_date ASC";
+EOT;
   $stmt = $DB->prepare($qry);
   log_query($qry, array('personid' => $personid));
-  $stmt->bindValue(':personid', $personid, PDO::PARAM_INT);
+  $stmt->bindValue('personid', $personid, PDO::PARAM_INT);
   $stmt->execute();
-  script_log($stmt->debugDumpParams(), LEVEL_DEBUG);
+  //$stmt->debugDumpParams();
   // fetch array with termids as keys and names as values, sorted chronologically
   $terms = $stmt->fetchAll(PDO::FETCH_UNIQUE);
   return $terms;
@@ -92,8 +91,8 @@ ORDER BY c.name asc
 EOT;
   $stmt = $DB->prepare($qry);
   log_query($qry, array('personid' => $personid, 'termid' => $termid));
-  $stmt->bindValue(':personid', $personid, PDO::PARAM_INT);
-  $stmt->bindValue(':termid', $termid, PDO::PARAM_INT);
+  $stmt->bindValue('personid', $personid, PDO::PARAM_INT);
+  $stmt->bindValue('termid', $termid, PDO::PARAM_INT);
   $stmt->execute();
   // fetch array of courses with courseids as keys, with names, sorted by name
   $courses = $stmt->fetchAll(PDO::FETCH_UNIQUE);
@@ -114,7 +113,7 @@ ORDER BY l.orderid ASC;
 EOT;
   $stmt = $DB->prepare($qry);
   log_query($qry, array('courseid' => $courseid));
-  $stmt->bindValue(':courseid', $courseid, PDO::PARAM_INT);
+  $stmt->bindValue('courseid', $courseid, PDO::PARAM_INT);
   $stmt->execute();
   // fetch array
   $lessons = $stmt->fetchAll(PDO::FETCH_UNIQUE);
@@ -134,7 +133,7 @@ ORDER BY orderid ASC, name ASC, timedue ASC
 EOT;
   $stmt = $DB->prepare($qry);
   log_query($qry, array('lessonid' => $lessonid));
-  $stmt->bindValue(':lessonid', $lessonid, PDO::PARAM_INT);
+  $stmt->bindValue('lessonid', $lessonid, PDO::PARAM_INT);
   $stmt->execute();
   // fetch array
   $results = $stmt->fetchAll(PDO::FETCH_UNIQUE);
@@ -158,8 +157,8 @@ where f.assignment_id = :assignmentid and fc.added_by = :personid and fc.parent_
 EOT;
     $stmt = $DB->prepare($qry);
 	log_query($qry, array('assignmentid' => $assignmentid, 'personid' => $personid));
-    $stmt->bindValue(':assignmentid', $assignmentid, PDO::PARAM_INT);
-    $stmt->bindValue(':personid', $personid, PDO::PARAM_INT);
+    $stmt->bindValue('assignmentid', $assignmentid, PDO::PARAM_INT);
+    $stmt->bindValue('personid', $personid, PDO::PARAM_INT);
     $stmt->execute();
     // fetch a single row
     $submission_date_info = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -172,8 +171,8 @@ where av.assignment_id = :assignmentid and av.student_id = :personid and av.adde
 EOT;
     $stmt = $DB->prepare($qry);
 	log_query($qry, array('assignmentid' => $assignmentid, 'personid' => $personid));
-    $stmt->bindValue(':assignmentid', $assignmentid, PDO::PARAM_INT);
-    $stmt->bindValue(':personid', $personid, PDO::PARAM_INT);
+    $stmt->bindValue('assignmentid', $assignmentid, PDO::PARAM_INT);
+    $stmt->bindValue('personid', $personid, PDO::PARAM_INT);
     $stmt->execute();
     // fetch a single row
     $submission_date_info = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -183,8 +182,8 @@ EOT;
   $qry = "select g.grade from course_grades g where g.assignmentid = :assignmentid and g.studentid = :personid";
   log_query($qry, array('assignmentid' => $assignmentid, 'personid' => $personid));
   $stmt = $DB->prepare($qry);
-  $stmt->bindValue(':assignmentid', $assignmentid, PDO::PARAM_INT);
-  $stmt->bindValue(':personid', $personid, PDO::PARAM_INT);
+  $stmt->bindValue('assignmentid', $assignmentid, PDO::PARAM_INT);
+  $stmt->bindValue('personid', $personid, PDO::PARAM_INT);
   $stmt->execute();
   // fetch a single datum
   $grade_pct = $stmt->fetchColumn();
