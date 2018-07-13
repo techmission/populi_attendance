@@ -61,11 +61,11 @@ function get_terms_by_person($personid) {
   // pdo query (checked)
   $terms = NULL;
   $qry = <<<EOT
-SELECT termid, term_name AS name FROM mv_courses_1718 c
+SELECT c.termid, c.term_name AS name FROM mv_courses_1718 c 
 JOIN mv_enrollments_1718 e ON c.instanceid = e.instanceid JOIN mv_students_1718 s ON s.personid = e.studentid 
-WHERE personid = :personid 
-GROUP BY termid
-ORDER BY term_start_date ASC
+WHERE s.personid = :personid 
+GROUP BY c.termid 
+ORDER BY c.term_start_date ASC
 EOT;
   $stmt = $DB->prepare($qry);
   log_query($qry, array('personid' => $personid));
@@ -82,10 +82,10 @@ function get_courses_by_term($personid, $termid) {
   // pdo query (checked)
   $courses = NULL;
   $qry = <<<EOT
-SELECT c.instanceid, c.name, FROM mv_courses_1718 c
-JOIN mv_enrollments_1718 e ON c.instanceid = e.instanceid JOIN mv_students_1718 s ON s.personid = e.studentid
-WHERE s.personid = :personid and c.termid = :termid
-GROUP BY e.instanceid
+SELECT c.instanceid, c.name, FROM mv_courses_1718 c 
+JOIN mv_enrollments_1718 e ON c.instanceid = e.instanceid JOIN mv_students_1718 s ON s.personid = e.studentid 
+WHERE s.personid = :personid and c.termid = :termid 
+GROUP BY e.instanceid 
 ORDER BY c.name asc
 EOT;
   $stmt = $DB->prepare($qry);
@@ -105,9 +105,9 @@ function get_lessons_by_course($courseid) {
   // pdo query (checked)
   $qry = <<<EOT
 SELECT l.lessonid, l.name from course_lessons l join course_assignments c 
-ON c.lessonid = l.lessonid
-WHERE l.instanceid = :courseid
-GROUP BY l.lessonid
+ON c.lessonid = l.lessonid 
+WHERE l.instanceid = :courseid 
+GROUP BY l.lessonid 
 ORDER BY l.orderid ASC;
 EOT;
   $stmt = $DB->prepare($qry);
@@ -126,8 +126,8 @@ function get_assignments_by_lesson($lessonid) {
   // pdo query (checked)
   // exclude deleted assignments and ones that have no submission associated with them
   $qry = <<<EOT
-SELECT assignmentid, name, type, status, timedue FROM course_assignments
-WHERE lessonid = :lessonid AND status = 'ACTIVE' AND type NOT IN ('ATTENDANCE', 'NEITHER')
+SELECT assignmentid, name, type, status, timedue FROM course_assignments 
+WHERE lessonid = :lessonid AND status = 'ACTIVE' AND type NOT IN ('ATTENDANCE', 'NEITHER') 
 ORDER BY orderid ASC, name ASC, timedue ASC
 EOT;
   $stmt = $DB->prepare($qry);
@@ -150,9 +150,9 @@ function get_assignment_submission_info($assignmentid, $assignment_type, $person
   if($assignment_type == 'DISCUSSION') {
     // pdo query (checked)
     $qry = <<<EOT
-select f.topic_id, min(f.added_at) as min_added_time, max(f.added_at) as max_added_time from forum_topics f
- join forum_topic_comments fc on f.topic_id = fc.topic_id
- where f.assignment_id = :assignmentid and fc.added_by = :personid and fc.parent_comment_id = 0 group by f.assignment_id
+select f.topic_id, min(f.added_at) as min_added_time, max(f.added_at) as max_added_time from forum_topics f 
+join forum_topic_comments fc on f.topic_id = fc.topic_id 
+where f.assignment_id = :assignmentid and fc.added_by = :personid and fc.parent_comment_id = 0 group by f.assignment_id
 EOT;
     $stmt = $DB->prepare($qry);
 	log_query($qry, array('assignmentid' => $assignmentid, 'personid' => $personid));
@@ -178,12 +178,9 @@ EOT;
   }
   
   // 2. get the grade, if any
-  $qry = <<<EOT
-select g.grade from course_grades g where g.assignmentid = :assignmentid and g.studentid = :personid
-EOT;
+  $qry = "select g.grade from course_grades g where g.assignmentid = :assignmentid and g.studentid = :personid";
   log_query($qry, array('assignmentid' => $assignmentid, 'personid' => $personid));
   $stmt = $DB->prepare($qry);
-  
   $stmt->bindValue(':assignmentid', $assignmentid, PDO::PARAM_INT);
   $stmt->bindValue(':personid', $personid, PDO::PARAM_INT);
   $stmt->execute();
@@ -226,8 +223,8 @@ function get_grade_letter($grade_pct) {
   }
   // Get the grading scale
   $qry = <<<EOT
-select gp.letter, gp.min_points, gp.grade_points, gp.direct_equivalent, gp.fail from grade_points gp
-where gp.deleted_by = '' and gp.letter != "P"
+select gp.letter, gp.min_points, gp.grade_points, gp.direct_equivalent, gp.fail from grade_points gp 
+where gp.deleted_by = '' and gp.letter != "P" 
 order by gp.min_points desc
 EOT;
   $stmt = $DB->prepare($qry);
