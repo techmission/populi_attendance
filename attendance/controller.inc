@@ -69,9 +69,21 @@ function build_attendance_data() {
 function build_error_page($error_msg, $vars) {
   global $TWIG;
   $template = $TWIG->load('error.html');
+  if(LOG_MODE == MODE_DEFAULT) {
+    $log_mode = 'Default';
+  }
+  else {
+    $log_mode = 'Debug';
+  }
+  $twig_vars = array('error_msg' => $error_msg, 'log_mode' => $log_mode);
+  if(isset($vars['error_info'])) {
+    $twig_vars['error_info'] = $vars['error_info'];
+	unset($vars['error_info']);
+  }
   // get a rendered array of the vars as a variable to show
   $vars_dump = print_r($vars, TRUE);
-  echo $template->render(array('error_msg' => $error_msg, 'vars' => $vars, 'vars_dump' => $vars_dump, 'log_mode' => LOG_MODE));
+  $twig_vars['vars_dump'] = $vars_dump;
+  echo $template->render($twig_vars);
   script_log($error_msg, LEVEL_ERROR);
   exit(-1);
 }
