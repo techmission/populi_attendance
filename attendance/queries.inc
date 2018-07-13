@@ -83,7 +83,7 @@ function get_courses_by_term($personid, $termid) {
   // pdo query (checked)
   $courses = NULL;
   $qry = <<<EOT
-SELECT c.instanceid, c.name, FROM mv_courses_1718 c 
+SELECT c.instanceid, c.name FROM mv_courses_1718 c 
 JOIN mv_enrollments_1718 e ON c.instanceid = e.instanceid JOIN mv_students_1718 s ON s.personid = e.studentid 
 WHERE s.personid = :personid and c.termid = :termid 
 GROUP BY e.instanceid 
