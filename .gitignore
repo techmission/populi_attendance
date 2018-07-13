@@ -5,5 +5,7 @@ logs
 settings/connection.inc
 settings/api_settings.inc
 # used for Twig
+attendance/vendor
+attendance/twig_cache
 vendor
 twig_cache
