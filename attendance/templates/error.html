@@ -8,7 +8,7 @@
 <h1>Error</h1>
 <p>{{ error_msg }}</p>
 <!-- Dump error info if there is more and set to debug -->
-{% if constant('LOG_MODE') is constant('MODE_DEBUG') and error_info is defined %}
+{% if constant('LOG_MODE') is constant('MODE_DEBUG') %}
 <h2>Error Info</h2>
 <pre>{{ error_info }}</pre>
 {% endif %}
