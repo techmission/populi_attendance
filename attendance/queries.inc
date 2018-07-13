@@ -60,13 +60,14 @@ function get_terms_by_person($personid) {
   global $DB;
   // pdo query (checked)
   $terms = NULL;
-  $qry = <<<EOT
+  /* $qry = <<<EOT
 SELECT c.termid, c.term_name AS name FROM mv_courses_1718 c 
 JOIN mv_enrollments_1718 e ON c.instanceid = e.instanceid JOIN mv_students_1718 s ON s.personid = e.studentid 
 WHERE s.personid = :personid 
 GROUP BY c.termid 
 ORDER BY c.term_start_date ASC
-EOT;
+EOT; */
+  $qry = "SELECT c.termid, c.term_name AS name FROM mv_courses_1718 c JOIN mv_enrollments_1718 e ON c.instanceid = e.instanceid JOIN mv_students_1718 s ON s.personid = e.studentid WHERE s.personid = :personid GROUP BY c.termid ORDER BY c.term_start_date ASC";
   $stmt = $DB->prepare($qry);
   log_query($qry, array('personid' => $personid));
   $stmt->bindValue(':personid', $personid, PDO::PARAM_INT);
