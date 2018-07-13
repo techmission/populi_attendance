@@ -72,6 +72,7 @@ EOT; */
   log_query($qry, array('personid' => $personid));
   $stmt->bindValue(':personid', $personid, PDO::PARAM_INT);
   $stmt->execute();
+  script_log($stmt->debugDumpParams(), LEVEL_DEBUG);
   // fetch array with termids as keys and names as values, sorted chronologically
   $terms = $stmt->fetchAll(PDO::FETCH_UNIQUE);
   return $terms;
