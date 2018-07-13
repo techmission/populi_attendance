@@ -26,7 +26,7 @@ function get_attendance_data($personid, $firstname, $lastname) {
         $assignments = get_assignments_by_lessons($lessonid);
          // Step 5: For each assignment, get the submission info and add to array
         foreach($assignments as $assignmentid => $assignment) {
-          $submission_info = get_assignment_submission_info($assignmentid, $personid);
+          $submission_info = get_assignment_submission_info($assignmentid, $assignment['type'], $personid);
           // add the array of assignment info and submission info together, preserving keys
           // https://stackoverflow.com/questions/3292044
           $assignments[$assignmentid] = $assignments[$assignmentid] + $submission_info;
@@ -60,7 +60,7 @@ function get_terms_by_person($personid) {
   // pdo query (checked)
   $terms = NULL;
   $qry = <<<EOT
-SELECT termid, term_name FROM mv_courses_1718 c
+SELECT termid, term_name AS name FROM mv_courses_1718 c
 JOIN mv_enrollments_1718 e ON c.instanceid = e.instanceid JOIN mv_students_1718 s ON s.personid = e.studentid 
 WHERE personid = :personid 
 GROUP BY termid
@@ -70,7 +70,7 @@ EOT;
   $stmt->bindValue(':personid', $personid, PDO::PARAM_INT);
   $stmt->execute();
   // fetch array with termids as keys and names as values, sorted chronologically
-  $terms = $stmt->fetchAll(PDO::FETCH_GROUP);
+  $terms = $stmt->fetchAll(PDO::FETCH_UNIQUE);
   return $terms;
 }
 
@@ -91,7 +91,7 @@ EOT;
   $stmt->bindValue(':termid', $firstname, PDO::PARAM_INT);
   $stmt->execute();
   // fetch array of courses with courseids as keys, with names, sorted by name
-  $courses = $stmt->fetchAll(PDO::FETCH_GROUP);
+  $courses = $stmt->fetchAll(PDO::FETCH_UNIQUE);
   return $courses;
 }
 
@@ -111,7 +111,7 @@ EOT;
   $stmt->bindValue(':courseid', $courseid, PDO::PARAM_INT);
   $stmt->execute();
   // fetch array
-  $lessons = $stmt->fetchAll(PDO::FETCH_GROUP);
+  $lessons = $stmt->fetchAll(PDO::FETCH_UNIQUE);
   // array of lessons with lesson ids as keys, with names, sorted by order in course
   return $lessons;
 }
@@ -120,28 +120,29 @@ EOT;
 function get_assignments_by_lesson($lessonid) {
   global $DB;
   // pdo query (checked)
+  // exclude deleted assignments and ones that have no submission associated with them
   $qry = <<<EOT
 SELECT assignmentid, name, type, status, timedue FROM course_assignments
-WHERE lessonid = :lessonid AND status = 'ACTIVE'
+WHERE lessonid = :lessonid AND status = 'ACTIVE' AND type NOT IN ('ATTENDANCE', 'NEITHER')
 ORDER BY orderid ASC, name ASC, timedue ASC
 EOT;
   $stmt = $DB->prepare($qry);
   $stmt->bindValue(':lessonid', $lessonid, PDO::PARAM_INT);
   $stmt->execute();
   // fetch array
-  $results = $stmt->fetchAll(PDO::FETCH_GROUP);
+  $results = $stmt->fetchAll(PDO::FETCH_UNIQUE);
   // array of assignments, with names, sorted by order in lesson
   return $assignments;
 }
 
 /* Step 5: For each assignment, get the submission info  */
-function get_assignment_submission_info($assignmentid, $personid) {
+function get_assignment_submission_info($assignmentid, $assignment_type, $personid) {
   global $DB;
   $submission_date_info = NULL;
   $grade_pct = NULL;
   // 1. get submission dates
   // if forum, get submission dates from discussion table
-  if($assignment['type'] == 'DISCUSSION') {
+  if($assignment_type == 'DISCUSSION') {
     // pdo query (checked)
     $qry = <<<EOT
 select f.topic_id, min(f.added_at) as min_added_time, max(f.added_at) as max_added_time from forum_topics f
@@ -194,6 +195,9 @@ EOT;
   }
   $submission_info['grade_letter'] = $grade_letter;
   
+  // 5. Format the assignment type
+  $submission_info['type_fmt'] = format_assignment_type($assignment_type);
+
   // Build the array
   // this array will be merged back into the assignment array
   
@@ -230,6 +234,29 @@ EOT;
     }
   }
   return $grade_letter;
+}
+
+/* Format assignment type into a human-readable name */
+function format_assignment_type($assignment_type) {
+  $fmt_assignment_type = NULL;
+  if(is_string($assignment_type)) {
+    switch($assignment_type) {
+      case 'ESSAY':
+      case 'FILE_UPLOAD':
+        $fmt_assignment_type = 'Assignment';
+        break;
+      case 'DISCUSSION':
+        $fmt_assignment_type = 'Forum';
+        break;
+      case 'TEST':
+        $fmt_assignment_type = 'Quiz/Exam';
+        break;
+      // Just leave empty if unrecognized type
+      default:
+        $fmt_assignment_type = '';
+    }
+  }
+  return $fmt_assignment_type;
 }
 
 /* Validates whether data is in the correct format to render */
