@@ -24,7 +24,6 @@ function bootstrap() {
     $twig_cache_dir = 'twig_cache';
   }
   $TWIG = new Twig_Environment($loader, array('cache' => $twig_cache_dir, 'auto_reload' => TRUE));
-  $TWIG = new Twig_Environment($loader, array('cache' => 'twig_cache', 'auto_reload' => TRUE));
 
   // Connect to database using PDO
   $DB = db_connect();
