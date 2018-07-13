@@ -31,7 +31,7 @@ function get_attendance_data($personid, $firstname, $lastname) {
           // https://stackoverflow.com/questions/3292044
           $assignments[$assignmentid] = $assignments[$assignmentid] + $submission_info;
         } */
-		$assignments = array(1, 2);
+		$assignments = array(array('type_fmt' => 'Assignment', 'name' => 'test', 'max_submission_date' => '2017-09-09 18:26:38', 'grade_letter' => 'A'));
         $attendance_data['terms'][$termid]['courses'][$courseid]['lessons'][$lessonid]['assignments'] = $assignments;
       }
     }
