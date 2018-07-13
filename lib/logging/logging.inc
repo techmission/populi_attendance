@@ -20,19 +20,15 @@ function script_log($message, $level = LEVEL_DEBUG) {
   return $result;
 }
 
-/* Function to handle the PDOExceptions with our logger 
+/* Function to handle the PDOExceptions with our logger & Twig error page
    - https://phpdelusions.net/delusion/try-catch */
 /* set with set_exception_handler('custom_exception_handler') */
 
 function custom_exception_handler($ex) {
+  global $TWIG;
   header('HTTP/1.1 500 Internal Server Error', TRUE, 500);
   script_log($ex->getMessage(), LEVEL_ERROR);
-  if(LOG_MODE == MODE_DEBUG) {
-    echo '<pre>' . $ex->getMessage() . '</pre>';
-  }
-  else {
-    echo '<p>A fatal error has occurred.</p>';
-  }
+  build_error_page(ERROR_EXCEPTION, array('exception_text' => $ex->getMessage()));
 }
 
 /**
