@@ -1,0 +1,14 @@
+<!doctype html>
+<html>
+<head>
+<title>Access Denied</title>
+<link rel="stylesheet" type="css/style.css">
+</head>
+<body>
+<p>Access has been denied; use proper key.</p>
+<!-- Dump variables here if logging mode is set to debug -->
+{% if constant('LOG_MODE') is constant('MODE_DEBUG') %}
+<pre>{{ vars }}</pre>
+{% endif %}
+</body>
+</html>
