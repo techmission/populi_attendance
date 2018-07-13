@@ -8,12 +8,19 @@ function bootstrap() {
   global $DB;
   
   // Add Twig.
-  // TODO: Confirm this is the proper location for Twig.
   require_once('vendor/autoload.php');
   $loader = new Twig_Loader_Filesystem('templates');
   // Added auto_reload for debugging
+  if(LOG_MODE == MODE_DEBUG) {
+    $twig_cache_dir = FALSE;
+  }
+  else {
+    $twig_cache_dir = 'twig_cache';
+  }
+  $TWIG = new Twig_Environment($loader, array('cache' => $twig_cache_dir, 'auto_reload' => TRUE));
   $TWIG = new Twig_Environment($loader, array('cache' => 'twig_cache', 'auto_reload' => TRUE));
-  
+ 
+ 
   // Add includes for this codebase
   require_once('../includes.inc');      // PDO and logging classes (not Populi at the moment)
   require_once('constants.inc');        // defines constants
