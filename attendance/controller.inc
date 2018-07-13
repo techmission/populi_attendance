@@ -15,13 +15,17 @@ function bootstrap() {
   $TWIG = new Twig_Environment($loader, array('cache' => 'twig_cache', 'auto_reload' => TRUE));
   
   // Add includes for this codebase
-  require_once('../includes.inc')       // PDO and logging class (maybe Populi)
+  require_once('../includes.inc');      // PDO and logging classes (not Populi at the moment)
   require_once('constants.inc');        // defines constants
   require_once('settings.inc');         // defines settings that can change - script wide
   require_once('queries.inc');          // the queries that build the attendance data array - main business logic
   
   // Connect to database using PDO
   $DB = db_connect();
+  
+  // add a custom exception handler to make PDO exceptions go to the log
+  // see https://phpdelusions.net/delusion/try-catch
+  set_exception_handler('custom_exception_handler');
 }
 
 /* Function to build the attendance page */
@@ -30,16 +34,16 @@ function build_attendance_data() {
   $personid = '';
   $output = '';
   if(!empty($_GET['firstname'] && $_GET['LastName'])) {
-    $personid = get_personid($_GET['firstname'], $_GET['lastname');
-	// TODO: more robust checking in is_populi_id
-   if(!is_populi_id($personid)) {
-     build_error_page(ERROR_CONTACT_NOT_FOUND, array('firstname' => $_GET['firstname'], 'lastname' => $_GET['lastname'], 'personid' => $personid));
-   }
+    $personid = get_personid($_GET['firstname'], $_GET['lastname']);
+    // TODO: more robust checking in is_populi_id
+    if(!is_populi_id($personid)) {
+      build_error_page(ERROR_CONTACT_NOT_FOUND, array('firstname' => $_GET['firstname'], 'lastname' => $_GET['lastname'], 'personid' => $personid));
+    }
   }
   else {
-	// sanitized version of $_GET array: http://php.net/manual/en/function.filter-var-array.php
-	$get_array_sanitized = filter_var_array($_GET, FILTER_SANITIZE_STRING);
-    build_error_page(ERROR_INVALID_INPUT, array('get_params' => $get_array_sanitized);
+    // sanitized version of $_GET array: http://php.net/manual/en/function.filter-var-array.php
+    $get_array_sanitized = filter_var_array($_GET, FILTER_SANITIZE_STRING);
+    build_error_page(ERROR_INVALID_INPUT, array('get_params' => $get_array_sanitized));
   }
   
   $attendance_data = get_attendance_data($personid, $_GET['firstname'], $_GET['lastname']);

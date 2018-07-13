@@ -10,30 +10,30 @@ function get_attendance_data($personid, $firstname, $lastname) {
   // This will be the base level of the attendance data array
   $terms = get_terms_by_person($personid);
   if(is_array($terms)) {
-	$attendance_data['terms'] = $terms;
+    $attendance_data['terms'] = $terms;
   }
   
   // Step 2: For each term, get the courses, and add to array
   foreach($attendance_data['terms'] as $termid => $term) {
-	$courses = get_courses_by_term($personid, $termid);
+    $courses = get_courses_by_term($personid, $termid);
     $attendance_data['terms'][$termid]['courses'] = $courses;
-	//  Step 3: For each course, get the lessons, and add to array
-	foreach($attendance_data['terms'][$termid]['courses'] as $courseid => $courses) {
-	  $lessons = get_lessons_by_course($courseid);
-	  $attendance_data['terms'][$termid]['courses'][$courseid]['lessons'] = $lessons;
-	  // Step 4: For each lesson get the assignments and add to array
-	  foreach($attendance_data['terms'][$termid]['courses'][$courseid]['lessons'] as $lessonid => $lessons) {
-	    $assignments = get_assignments_by_lessons($lessonid);
-		 // Step 5: For each assignment, get the submission info and add to array
-	    foreach($assignments as $assignmentid => $assignment) {
-	      $submission_info = get_assignment_submission_info($assignmentid, $personid);
-		  // add the array of assignment info and submission info together, preserving keys
-		  // https://stackoverflow.com/questions/3292044
-		  $assignments[$assignmentid] = $assignments[$assignmentid] + $submission_info;
-		}
-	    $attendance_data['terms'][$termid]['courses'][$courseid]['lessons'][$lessonid]['assignments'] = $assignments;
-	  }
-	}
+    //  Step 3: For each course, get the lessons, and add to array
+    foreach($attendance_data['terms'][$termid]['courses'] as $courseid => $courses) {
+      $lessons = get_lessons_by_course($courseid);
+      $attendance_data['terms'][$termid]['courses'][$courseid]['lessons'] = $lessons;
+      // Step 4: For each lesson get the assignments and add to array
+      foreach($attendance_data['terms'][$termid]['courses'][$courseid]['lessons'] as $lessonid => $lessons) {
+        $assignments = get_assignments_by_lessons($lessonid);
+         // Step 5: For each assignment, get the submission info and add to array
+        foreach($assignments as $assignmentid => $assignment) {
+          $submission_info = get_assignment_submission_info($assignmentid, $personid);
+          // add the array of assignment info and submission info together, preserving keys
+          // https://stackoverflow.com/questions/3292044
+          $assignments[$assignmentid] = $assignments[$assignmentid] + $submission_info;
+        }
+        $attendance_data['terms'][$termid]['courses'][$courseid]['lessons'][$lessonid]['assignments'] = $assignments;
+      }
+    }
   }
   
   return $attendance_data;
@@ -43,89 +43,75 @@ function get_attendance_data($personid, $firstname, $lastname) {
 function get_personid($firstname, $lastname) {
   global $DB;
   $personid = NULL;
-  // pdo query
-  try {
-	$qry = 'SELECT personid FROM mv_students_1718 WHERE firstname = :firstname AND lastname = :lastname';  
-    $stmt = $DB->prepare($qry);
-	$stmt->bindValue(':firstname', $firstname, PDO::PARAM_STR);
-	$stmt->bindValue(':lastname', $firstname, PDO::PARAM_STR);
-	$stmt->execute();
-    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
-  }
-  catch(PDOException $ex) {
-    script_log($ex->getMessage(), LEVEL_ERROR);
-  }
+  // pdo query (checked)
+  $qry = 'SELECT personid FROM mv_students_1718 WHERE firstname = :firstname AND lastname = :lastname LIMIT 1';  
+  $stmt = $DB->prepare($qry);
+  $stmt->bindValue(':firstname', $firstname, PDO::PARAM_STR);
+  $stmt->bindValue(':lastname', $firstname, PDO::PARAM_STR);
+  $stmt->execute();
+  // fetch a single datum
+  $personid = $stmt->fetchColumn();
   return $personid;
 }
 
 /* Step 1: Get terms in which person was enrolled */
 function get_terms_by_person($personid) {
   global $DB;
-  // pdo query
-  try {
-    $qry = <<<EOT
-SELECT termid, term_name FROM mv_courses_1718 
-JOIN mv_enrollments_1718 ON c.instanceid = e.instanceid JOIN mv_students_1718 ON s.personid = e.studentid 
+  // pdo query (checked)
+  $terms = NULL;
+  $qry = <<<EOT
+SELECT termid, term_name FROM mv_courses_1718 c
+JOIN mv_enrollments_1718 e ON c.instanceid = e.instanceid JOIN mv_students_1718 s ON s.personid = e.studentid 
 WHERE personid = :personid 
 GROUP BY termid
 ORDER BY term_start_date ASC
 EOT;
-	$stmt = $DB->prepare($qry);
-	$stmt->bindValue(':personid', $personid, PDO::PARAM_INT);
-    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
-  }
-  catch(PDOException $ex) {
-    script_log($ex->getMessage(), LEVEL_ERROR);
-  }
-  // array with termids as keys and names as values, sorted chronologically
+  $stmt = $DB->prepare($qry);
+  $stmt->bindValue(':personid', $personid, PDO::PARAM_INT);
+  $stmt->execute();
+  // fetch array with termids as keys and names as values, sorted chronologically
+  $terms = $stmt->fetchAll(PDO::FETCH_GROUP);
   return $terms;
 }
 
 /* Step 2: For each term, get the courses */
 function get_courses_by_term($personid, $termid) {
-  global $DB;	
-  // pdo query
-  try {
-    $qry = <<<EOT
-SELECT name, term_name, start_date FROM mv_courses_1718
-JOIN mv_enrollments_1718 ON c.instanceid = e.instanceid JOIN mv_students_1718 ON s.personid = e.studentid
-WHERE personid = :personid AND termid = :termid
-GROUP BY instanceid
-ORDER BY name asc
+  global $DB;    
+  // pdo query (checked)
+  $courses = NULL;
+  $qry = <<<EOT
+SELECT c.instanceid, c.name, FROM mv_courses_1718 c
+JOIN mv_enrollments_1718 e ON c.instanceid = e.instanceid JOIN mv_students_1718 s ON s.personid = e.studentid
+WHERE s.personid = :personid and c.termid = :termid
+GROUP BY e.instanceid
+ORDER BY c.name asc
 EOT;
-	$stmt = $DB->prepare($qry);
-	$stmt->bindValue(':personid', $firstname, PDO::PARAM_INT);
-	$stmt->bindValue(':termid', $firstname, PDO::PARAM_INT);
-	$stmt->execute();
-    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
-  }
-  catch(PDOException $ex) {
-    script_log($ex->getMessage(), LEVEL_ERROR);
-  }
-  // array of courses with courseids as keys, sorted by name
+  $stmt = $DB->prepare($qry);
+  $stmt->bindValue(':personid', $firstname, PDO::PARAM_INT);
+  $stmt->bindValue(':termid', $firstname, PDO::PARAM_INT);
+  $stmt->execute();
+  // fetch array of courses with courseids as keys, with names, sorted by name
+  $courses = $stmt->fetchAll(PDO::FETCH_GROUP);
   return $courses;
 }
 
 /* Step 3: For each course, get the lessons */
 function get_lessons_by_course($courseid) {
-  global $DB;	
-  // pdo query
-  try {
-	$qry = <<<EOT
-SELECT l.lessonid, l.name, l.orderid from course_lessons l join course_assignments c 
+  global $DB;
+  $lessons = NULL;
+  // pdo query (checked)
+  $qry = <<<EOT
+SELECT l.lessonid, l.name from course_lessons l join course_assignments c 
 ON c.lessonid = l.lessonid
 WHERE l.instanceid = :courseid
 GROUP BY l.lessonid
 ORDER BY l.orderid ASC;
 EOT;
-    $stmt = $DB->prepare($qry);
-	$stmt->bindValue(':courseid', $courseid, PDO::PARAM_INT);
-	$stmt->execute();
-    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
-  }
-  catch(PDOException $ex) {
-    script_log($ex->getMessage(), LEVEL_ERROR);
-  }
+  $stmt = $DB->prepare($qry);
+  $stmt->bindValue(':courseid', $courseid, PDO::PARAM_INT);
+  $stmt->execute();
+  // fetch array
+  $lessons = $stmt->fetchAll(PDO::FETCH_GROUP);
   // array of lessons with lesson ids as keys, with names, sorted by order in course
   return $lessons;
 }
@@ -133,20 +119,17 @@ EOT;
 /* Step 4: For each lesson get the assignments */
 function get_assignments_by_lesson($lessonid) {
   global $DB;
-  // pdo query
-  try {
-	$qry = <<<EOT
-SELECT assignment_id, name, type, status, timedue FROM course_assignments
-WHERE lessonid= :lessonid
+  // pdo query (checked)
+  $qry = <<<EOT
+SELECT assignmentid, name, type, status, timedue FROM course_assignments
+WHERE lessonid = :lessonid AND status = 'ACTIVE'
 ORDER BY orderid ASC, name ASC, timedue ASC
 EOT;
-    $stmt = $DB->prepare($qry);
-	$stmt->bindValue(':lessonid', $lessonid, PDO::PARAM_INT);
-    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
-  }
-  catch(PDOException $ex) {
-    script_log($ex->getMessage(), LEVEL_ERROR);
-  }	
+  $stmt = $DB->prepare($qry);
+  $stmt->bindValue(':lessonid', $lessonid, PDO::PARAM_INT);
+  $stmt->execute();
+  // fetch array
+  $results = $stmt->fetchAll(PDO::FETCH_GROUP);
   // array of assignments, with names, sorted by order in lesson
   return $assignments;
 }
@@ -154,41 +137,100 @@ EOT;
 /* Step 5: For each assignment, get the submission info  */
 function get_assignment_submission_info($assignmentid, $personid) {
   global $DB;
+  $submission_date_info = NULL;
+  $grade_pct = NULL;
   // 1. get submission dates
   // if forum, get submission dates from discussion table
   if($assignment['type'] == 'DISCUSSION') {
-    // pdo queries
-	try {
-      // TODO: add queries
-	  $stmt = $db->query($qry);
-      $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-    catch(PDOException $ex) {
-      script_log($ex->getMessage(), LEVEL_ERROR);
-    }
+    // pdo query (checked)
+    $qry = <<<EOT
+select f.topic_id, min(f.added_at) as min_added_time, max(f.added_at) as max_added_time from forum_topics f
+ join forum_topic_comments fc on f.topic_id = fc.topic_id
+ where f.assignment_id = :assignmentid and fc.added_by = :personid and fc.parent_comment_id = 0 group by f.assignment_id
+EOT;
+    $stmt = $DB->prepare($qry);
+    $stmt->bindValue(':assignmentid', $assignmentid, PDO::PARAM_INT);
+    $stmt->bindValue(':personid', $personid, PDO::PARAM_INT);
+    $stmt->execute();
+    // fetch a single row
+    $submission_date_info = $stmt->fetch(PDO::FETCH_ASSOC);
   }
   else {
-    // pdo queries (from either my report, or probably directly to the assignment_submissions table)
-	try {
-      // TODO: add queries
-	  $stmt = $db->query($qry);
-      $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-    catch(PDOException $ex) {
-      script_log($ex->getMessage(), LEVEL_ERROR);
-    }
+    // query assignment_submissions materialized view
+    $qry = <<<EOT
+select min(av.added_time) as min_added_time, max(av.added_time) as max_added_time from mv_assignment_submissions_1718 av 
+where av.assignment_id = :assignmentid and av.student_id = :personid and av.added_by = :personid group by av.assignment_id
+EOT;
+    $stmt = $DB->prepare($qry);
+    $stmt->bindValue(':assignmentid', $assignmentid, PDO::PARAM_INT);
+    $stmt->bindValue(':personid', $personid, PDO::PARAM_INT);
+    $stmt->execute();
+    // fetch a single row
+    $submission_date_info = $stmt->fetch(PDO::FETCH_ASSOC);
   }
-  // 2. format the dates, or put in “--” if none
-  // 3. Get the grades on the submissions (if there are submissions)
-  //     Put in “--” if no submission, or no grade (for now, don’t differentiate between those cases)
-  return $submission_info;  // this array will be merged back into the assignment array
+  
+  // 2. get the grade, if any
+  $qry = <<<EOT
+select g.grade from course_grades g where g.assignmentid = :assignmentid and g.studentid = :personid
+EOT;
+  $stmt = $DB->prepare($qry);
+  $stmt->bindValue(':assignmentid', $assignmentid, PDO::PARAM_INT);
+  $stmt->bindValue(':personid', $personid, PDO::PARAM_INT);
+  $stmt->execute();
+  // fetch a single datum
+  $grade_pct = $stmt->fetchColumn();
+  
+  // 3. Put in NULL if no date (use Twig to format dates - see https://twig.symfony.com/doc/1.x/filters/date.html)
+  if(!is_array($submission_date_info) || $submission_date_info['max_added_time'] == NULL) {
+    $submission_info['max_submission_date'] = NULL;
+  }
+  // 4. Format the grades
+  if(is_numeric($grade_pct) && $grade_pct > 0) {
+    $grade_letter = get_grade_letter($grade_pct);
+  }
+  //  Put in “--” if no submission, or no grade (for now, don’t differentiate between those cases)
+  else {
+    $grade_letter = "--";
+  }
+  $submission_info['grade_letter'] = $grade_letter;
+  
+  // Build the array
+  // this array will be merged back into the assignment array
+  
+  return $submission_info;  
 }
 
-
-
 /**
-  Utility functions 
+  Helper functions 
  */
+
+/* Translate a grade into a letter grade */
+function get_grade_letter($grade_pct) {
+  // Some basic error checking
+  if(!is_numeric($grade_pct) || $grade_pct < 0) {
+    $script_log($grade_pct . ' was not a number', LEVEL_ERROR);
+    return NULL;
+  }
+  // Get the grading scale
+  $qry = <<<EOT
+select gp.letter, gp.min_points, gp.grade_points, gp.direct_equivalent, gp.fail from grade_points gp
+where gp.deleted_by = '' and gp.letter != "P"
+order by gp.min_points desc
+EOT;
+  $stmt = $DB->prepare($qry);
+  $stmt->execute();
+  // fetch an array
+  $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+  foreach($results as $result) {
+    // iterate through grade scale
+    // if a match, end loop
+    if($grade_pct > $result['min_points']) {
+       $grade_letter = $result['letter'];
+       break;
+    }
+  }
+  return $grade_letter;
+}
 
 /* Validates whether data is in the correct format to render */
 function is_attendance_data_valid($attendance_data) {
@@ -205,10 +247,10 @@ function is_attendance_data_valid($attendance_data) {
 /* Validates a Populi ID */
 function is_populi_id($id) {
   if(is_numeric($id) && $id > 0) {
-	return TRUE;
+    return TRUE;
   }
   else {
-	return FALSE;
+    return FALSE;
   }
 }
 

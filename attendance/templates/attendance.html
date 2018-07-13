@@ -20,8 +20,11 @@
 							<table class="courses">
 							<tr><th class="course-name" colspan="3">{{ lesson.name }}</th></tr>
 								{% for assignment in lesson.assignments %}
-									<tr><td>{assignment.type} : {assignment.name}</td>
-									<td>Grade: {assignment.grade}</td><td>{assignment.min_submision_date}</td></tr>
+									<tr>
+									<td>{assignment.type} : {assignment.name}</td>
+									<td>Grade: {assignment.grade_letter}</td>
+									<td>{assignment.max_submission_date is empty ? "--" assignment.max_submission_date|date('l, F j, h:i A')}</td>
+									</tr>
 								{% endfor %}
 							</table>
 						{% endif %}
@@ -33,6 +36,10 @@
 {% endif %}
 
 {% if constant('LOG_MODE') is constant('MODE_DEBUG') %}
+	<h2>Attendance Array</h2>
+	<pre>
+	{{ a_pre }}
+	</pre>
 	<h2>Debugging Vars</h2>
 	<pre>
 	{{ vars }}
