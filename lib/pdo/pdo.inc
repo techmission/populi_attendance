@@ -41,7 +41,7 @@ function log_query($query, $params) {
 
     $query = preg_replace($keys, $params, $query, 1, $count);
 
-    if(LOG_MODE == MODE_DEBUG) {
+    //if(LOG_MODE == MODE_DEBUG) {
       script_log($query, LEVEL_DEBUG);
-    }
+    //}
 }
