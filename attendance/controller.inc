@@ -28,11 +28,13 @@ function bootstrap() {
   // Connect to database using PDO
   $DB = db_connect();
 
-  // add a custom exception handler to make PDO exceptions go to the log
+  // add a custom exception handler to make PDO exceptions go to the log, as well as error handlers for other errors
   // see https://phpdelusions.net/delusion/try-catch
   // see https://stackoverflow.com/questions/841500
+  // see https://insomanic.me.uk/php-trick-catching-fatal-errors-e-error-with-a-custom-error-handler-cea2262697a2
   set_error_handler('error_to_exception');
   set_exception_handler('custom_exception_handler');
+  register_shutdown_function('fatal_error_handler');
 }
 
 /* Function to build the attendance page */

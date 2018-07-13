@@ -64,6 +64,18 @@ function error_to_exception( $code, $message, $file, $line, $context ) {
   }
 }
 
+
+/* shutdown function to catch fatal errors - this gets called on script exit, even if fatal error */
+/* https://insomanic.me.uk/php-trick-catching-fatal-errors-e-error-with-a-custom-error-handler-cea2262697a2 */
+function fatal_error_handler() {
+  // Get last error
+  $last_error = error_get_last();
+  if ($last_error['type'] === E_ERROR) {
+    // fatal error
+    error_to_exception(E_ERROR, $last_error['message'], $last_error['file'], $last_error['line']);
+  }
+}
+
 /**
  * Gets the caller of the function where this function is called from
  * @param string what to return? 
