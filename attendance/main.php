@@ -22,6 +22,7 @@ if(!isset($_GET['key']) && $_GET['key'] != GUID) {
 // Build the attendance data array; uses data from $_GET
 $attendance_data = build_attendance_data();
 
+// Render the attendance data using the default template
 $template = $TWIG->load(TEMPLATE_FILE);
 echo $template->render(array('a' => $attendance_data, 'vars' => $VARS, 'a_pre' => print_r($attendance_data, TRUE)));
 ?>
