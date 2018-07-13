@@ -16,12 +16,7 @@
 				<h3>{{ course.name }}</h3>
 				{% if course.lessons is not empty %}
 					{% for lesson in course.lessons %}
-						{% if lesson.assignments is not empty %}
-							<table class="courses">
-							<tr><th class="course-name" colspan="3">{{ lesson.name }}</th></tr>
-                            <tr><td></td><td></td><td></td></tr>
-							</table>
-						{% endif %}
+					   {{ lesson.name }}
 					{% endfor %}
 				{% endif %}
 			{% endfor %}
