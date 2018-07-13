@@ -10,23 +10,9 @@ function db_connect() {
   return $db;
 }
 
-/* Function to handle the PDOExceptions with our logger 
-   - https://phpdelusions.net/delusion/try-catch */
-/* set with set_exception_handler('custom_exception_handler') */
-
-function custom_exception_handler($ex) {
-  header('HTTP/1.1 500 Internal Server Error', TRUE, 500);
-  script_log($ex->getMessage(), LEVEL_ERROR);
-  if(LOG_MODE == MODE_DEBUG) {
-    echo '<pre>' . $ex->getMessage() . '</pre>';
-  }
-  else {
-    echo '<p>A fatal error has occurred.</p>';
-  }
-}
-
 /* Get the actual query that was run - for debugging
    from https://stackoverflow.com/questions/210564/getting-raw-sql-query-string-from-pdo-prepared-statements */
+/* TODO: get this to add quotes properly */
 function log_query($query, $params) {
     $keys = array();
 
@@ -42,6 +28,7 @@ function log_query($query, $params) {
     $query = preg_replace($keys, $params, $query, 1, $count);
 
     if(LOG_MODE == MODE_DEBUG) {
-      script_log($query, LEVEL_DEBUG);
+	  $caller = get_caller();
+      script_log($query . ' in: ' . $caller['function'] . ', line ' . $caller['line'], LEVEL_DEBUG);
     }
 }

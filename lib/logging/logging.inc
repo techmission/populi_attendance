@@ -19,3 +19,39 @@ function script_log($message, $level = LEVEL_DEBUG) {
   // Result is the number of bytes logged, or FALSE on failure.
   return $result;
 }
+
+/* Function to handle the PDOExceptions with our logger 
+   - https://phpdelusions.net/delusion/try-catch */
+/* set with set_exception_handler('custom_exception_handler') */
+
+function custom_exception_handler($ex) {
+  header('HTTP/1.1 500 Internal Server Error', TRUE, 500);
+  script_log($ex->getMessage(), LEVEL_ERROR);
+  if(LOG_MODE == MODE_DEBUG) {
+    echo '<pre>' . $ex->getMessage() . '</pre>';
+  }
+  else {
+    echo '<p>A fatal error has occurred.</p>';
+  }
+}
+
+/**
+ * Gets the caller of the function where this function is called from
+ * @param string what to return? 
+ *  (Leave empty to get all, or specify: "class", "function", "line", "class", etc.) - options see: http://php.net/manual/en/function.debug-backtrace.php
+ * https://stackoverflow.com/questions/190421/caller-function-in-php-5
+ */
+function get_caller($what = NULL)
+{
+    $trace = debug_backtrace();
+    $previous_call = $trace[2]; // 0 is this call, 1 is call in previous function, 2 is caller of that function
+
+    if(isset($what))
+    {
+        return $previous_call[$what];
+    }
+    else
+    {
+        return $previous_call;
+    }   
+}
