@@ -28,7 +28,40 @@ function custom_exception_handler($ex) {
   global $TWIG;
   header('HTTP/1.1 500 Internal Server Error', TRUE, 500);
   script_log($ex->getMessage(), LEVEL_ERROR);
-  build_error_page(ERROR_EXCEPTION, array('exception_text' => $ex->getMessage()));
+  build_error_page(ERROR_EXCEPTION, array('exception' => $ex));
+}
+
+/* Turn fatal errors to exceptions - https://stackoverflow.com/questions/841500 */
+class ErrorOrWarningException extends Exception
+{
+    protected $_Context = null;
+    public function getContext()
+    {
+        return $this->_Context;
+    }
+    public function setContext( $value )
+    {
+        $this->_Context = $value;
+    }
+
+    public function __construct( $code, $message, $file, $line, $context )
+    {
+        parent::__construct( $message, $code );
+
+        $this->file = $file;
+        $this->line = $line;
+        $this->setContext( $context );
+    }
+}
+
+/* set with set_exception_handler('error_to_exception') */
+function error_to_exception( $code, $message, $file, $line, $context ) {
+  if($code == E_ERROR || $code == E_WARNING) {
+    throw new ErrorOrWarningException( $code, $message, $file, $line, $context );
+  }
+  else {
+    return FALSE;
+  }
 }
 
 /**

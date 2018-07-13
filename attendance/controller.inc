@@ -30,6 +30,8 @@ function bootstrap() {
 
   // add a custom exception handler to make PDO exceptions go to the log
   // see https://phpdelusions.net/delusion/try-catch
+  // see https://stackoverflow.com/questions/841500
+  set_error_handler('error_to_exception');
   set_exception_handler('custom_exception_handler');
 }
 
