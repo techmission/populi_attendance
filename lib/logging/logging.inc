@@ -31,34 +31,17 @@ function custom_exception_handler($ex) {
   build_error_page(ERROR_EXCEPTION, array('exception' => $ex));
 }
 
-/* Turn fatal errors to exceptions - https://stackoverflow.com/questions/841500 */
-class ErrorOrWarningException extends Exception
-{
-    protected $_Context = null;
-    public function getContext()
-    {
-        return $this->_Context;
-    }
-    public function setContext( $value )
-    {
-        $this->_Context = $value;
-    }
-
-    public function __construct( $code, $message, $file, $line, $context )
-    {
-        parent::__construct( $message, $code );
-
-        $this->file = $file;
-        $this->line = $line;
-        $this->setContext( $context );
-    }
-}
-
-/* set with set_exception_handler('error_to_exception') */
-function error_to_exception( $code, $message, $file, $line, $context ) {
-  if($code == E_ERROR || $code == E_WARNING) {
-    throw new ErrorOrWarningException( $code, $message, $file, $line, $context );
+/* set with set_exception_handler('error_page_handler') */
+function error_page_handler ($code, $message, $file, $line, $context ) {
+  global $TWIG;
+  if($code === E_ERROR || $code === E_WARNING) {
+    header('HTTP/1.1 500 Internal Server Error', TRUE, 500);
+    // Log the error
+    script_log($message . ' in ' . $file . ' on ' . $line . ' in ' . $context, LEVEL_ERROR);
+    // Build the error page (get_defined_vars() is an array of the variables in the function)
+    build_error_page(ERROR_PHP_ERROR, array('error_info' => get_defined_vars()));
   }
+  // Otherwise, use regular error handler
   else {
     return FALSE;
   }
@@ -72,7 +55,7 @@ function fatal_error_handler() {
   $last_error = error_get_last();
   if ($last_error['type'] === E_ERROR) {
     // fatal error
-    error_to_exception(E_ERROR, $last_error['message'], $last_error['file'], $last_error['line']);
+    error_page_handler(E_ERROR, $last_error['message'], $last_error['file'], $last_error['line']);
   }
 }
 

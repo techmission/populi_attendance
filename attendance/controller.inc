@@ -33,7 +33,7 @@ function bootstrap() {
   // see https://stackoverflow.com/questions/841500
   // see https://insomanic.me.uk/php-trick-catching-fatal-errors-e-error-with-a-custom-error-handler-cea2262697a2
   set_error_handler('error_to_exception');
-  set_exception_handler('custom_exception_handler');
+  set_exception_handler('error_page_handler');
   register_shutdown_function('fatal_error_handler');
 }
 
