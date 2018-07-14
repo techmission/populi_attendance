@@ -133,9 +133,12 @@ function get_assignments_by_lesson($lessonid) {
   global $DB;
   // pdo query (checked)
   // exclude deleted assignments and ones that have no submission associated with them
+  // also exclude the "required books" assignments
   $qry = <<<EOT
 SELECT assignmentid, name, type, status, timedue FROM course_assignments 
-WHERE lessonid = :lessonid AND status = 'ACTIVE' AND type NOT IN ('ATTENDANCE', 'NEITHER') 
+WHERE lessonid = :lessonid 
+AND status = 'ACTIVE' AND type NOT IN ('ATTENDANCE', 'NEITHER') 
+AND name NOT LIKE '%Required Books%'
 ORDER BY orderid ASC, name ASC, timedue ASC
 EOT;
   $stmt = $DB->prepare($qry);
