@@ -63,10 +63,12 @@ function get_terms_by_person($personid) {
   global $DB;
   // pdo query (checked)
   $terms = NULL;
+  // exclude Summer 2018 term since it is not in the HCM submission
   $qry = <<<EOT
 SELECT c.termid, c.term_name AS name FROM mv_courses_1718 c 
 JOIN mv_enrollments_1718 e ON c.instanceid = e.instanceid JOIN mv_students_1718 s ON s.personid = e.studentid 
 WHERE s.personid = :personid 
+AND c.termid != 191581
 GROUP BY c.termid 
 ORDER BY c.term_start_date ASC
 EOT;
@@ -74,7 +76,9 @@ EOT;
   // log_query($qry, array('personid' => $personid));
   $stmt->bindValue('personid', $personid, PDO::PARAM_INT);
   $stmt->execute();
+  // debug statement (note that this requires PHP to be upgraded to work properly)
   //$stmt->debugDumpParams();
+  
   // fetch array with termids as keys and names as values, sorted chronologically
   $terms = $stmt->fetchAll(PDO::FETCH_UNIQUE);
   return $terms;
