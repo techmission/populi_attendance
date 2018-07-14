@@ -21,7 +21,7 @@
 							<tr><th class="course-name" colspan="3">{{ lesson.name }}</th></tr>
 								{% for assignment in lesson.assignments %}
 									<tr>
-									<td>{{ assignment.type_fmt }} : {{ assignment.name }}</td>
+									<td>{{ assignment.type_fmt }}: {{ assignment.name }}</td>
 									<td>Grade: {{ assignment.grade_letter }}</td>
 									<td>{{ assignment.max_submission_date is empty ? "--" : assignment.max_submission_date|date('l, F j, h:i A') }}</td>
 									</tr>
