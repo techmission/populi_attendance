@@ -5,7 +5,7 @@
 define('LOG_MODE', MODE_DEBUG);
 
 /* Set whether to debug Twig or not */
-define('DEBUG_TWIG', FALSE);
+define('DEBUG_TWIG', TRUE);
 
 /* Name of logfile */
 define('LOGFILE', 'attendance.log');

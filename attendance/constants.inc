@@ -3,7 +3,7 @@
 /* File to define constants used in the codebase. */
 
 /* Name of template file */
-define('TEMPLATE_FILE', 'attendance-test.html');
+define('TEMPLATE_FILE', 'attendance.html');
 
 /* Error messages */
 define('ERROR_STUDENT_NOT_FOUND', 'A student was not found based on the provided information.');
