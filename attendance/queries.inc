@@ -24,6 +24,7 @@ function get_attendance_data($personid, $firstname, $lastname) {
       // Step 4: For each lesson get the assignments and add to array
       foreach($attendance_data['terms'][$termid]['courses'][$courseid]['lessons'] as $lessonid => $lessons) {
         $assignments = get_assignments_by_lesson($lessonid);
+		script_log(print_r($assignments, TRUE), LEVEL_DEBUG);
          // Step 5: For each assignment, get the submission info and add to array
         foreach($assignments as $assignmentid => $assignment) {
           $submission_info = get_assignment_submission_info($assignmentid, $assignment['type'], $personid);
@@ -47,7 +48,7 @@ function get_personid($firstname, $lastname) {
   // pdo query (checked)
   $qry = 'SELECT personid FROM mv_students_1718 WHERE firstname = :firstname AND lastname = :lastname LIMIT 1';  
   $stmt = $DB->prepare($qry);
-  log_query($qry, array('firstname' => $firstname, 'lastname' => $lastname));
+  // log_query($qry, array('firstname' => $firstname, 'lastname' => $lastname));
   $stmt->bindValue('firstname', $firstname, PDO::PARAM_STR);
   $stmt->bindValue('lastname', $lastname, PDO::PARAM_STR);
   $stmt->execute();
@@ -69,7 +70,7 @@ GROUP BY c.termid
 ORDER BY c.term_start_date ASC
 EOT;
   $stmt = $DB->prepare($qry);
-  log_query($qry, array('personid' => $personid));
+  // log_query($qry, array('personid' => $personid));
   $stmt->bindValue('personid', $personid, PDO::PARAM_INT);
   $stmt->execute();
   //$stmt->debugDumpParams();
@@ -91,7 +92,7 @@ GROUP BY e.instanceid
 ORDER BY c.name asc
 EOT;
   $stmt = $DB->prepare($qry);
-  log_query($qry, array('personid' => $personid, 'termid' => $termid));
+  // log_query($qry, array('personid' => $personid, 'termid' => $termid));
   $stmt->bindValue('personid', $personid, PDO::PARAM_INT);
   $stmt->bindValue('termid', $termid, PDO::PARAM_INT);
   $stmt->execute();
@@ -113,7 +114,7 @@ GROUP BY l.lessonid
 ORDER BY l.orderid ASC;
 EOT;
   $stmt = $DB->prepare($qry);
-  log_query($qry, array('courseid' => $courseid));
+  // log_query($qry, array('courseid' => $courseid));
   $stmt->bindValue('courseid', $courseid, PDO::PARAM_INT);
   $stmt->execute();
   // fetch array
@@ -157,7 +158,7 @@ join forum_topic_comments fc on f.topic_id = fc.topic_id
 where f.assignment_id = :assignmentid and fc.added_by = :personid and fc.parent_comment_id = 0 group by f.assignment_id
 EOT;
     $stmt = $DB->prepare($qry);
-	log_query($qry, array('assignmentid' => $assignmentid, 'personid' => $personid));
+	// log_query($qry, array('assignmentid' => $assignmentid, 'personid' => $personid));
     $stmt->bindValue('assignmentid', $assignmentid, PDO::PARAM_INT);
     $stmt->bindValue('personid', $personid, PDO::PARAM_INT);
     $stmt->execute();
@@ -171,7 +172,7 @@ select min(av.added_time) as min_added_time, max(av.added_time) as max_added_tim
 where av.assignment_id = :assignmentid and av.student_id = :personid and av.added_by = :personid group by av.assignment_id
 EOT;
     $stmt = $DB->prepare($qry);
-	log_query($qry, array('assignmentid' => $assignmentid, 'personid' => $personid));
+	// log_query($qry, array('assignmentid' => $assignmentid, 'personid' => $personid));
     $stmt->bindValue('assignmentid', $assignmentid, PDO::PARAM_INT);
     $stmt->bindValue('personid', $personid, PDO::PARAM_INT);
     $stmt->execute();
@@ -181,7 +182,7 @@ EOT;
   
   // 2. get the grade, if any
   $qry = "select g.grade from course_grades g where g.assignmentid = :assignmentid and g.studentid = :personid";
-  log_query($qry, array('assignmentid' => $assignmentid, 'personid' => $personid));
+  // log_query($qry, array('assignmentid' => $assignmentid, 'personid' => $personid));
   $stmt = $DB->prepare($qry);
   $stmt->bindValue('assignmentid', $assignmentid, PDO::PARAM_INT);
   $stmt->bindValue('personid', $personid, PDO::PARAM_INT);
@@ -230,7 +231,7 @@ where gp.deleted_by = '' and gp.letter != "P"
 order by gp.min_points desc
 EOT;
   $stmt = $DB->prepare($qry);
-  script_log($qry, LEVEL_DEBUG);
+  // script_log($qry, LEVEL_DEBUG);
   $stmt->execute();
   // fetch an array
   $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
