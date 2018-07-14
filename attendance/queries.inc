@@ -173,6 +173,7 @@ EOT;
     // fetch a single row
     $submission_date_info = $stmt->fetch(PDO::FETCH_ASSOC);
   }
+  // FIXME: add logic to query the tests table for when a test was taken
   else {
     // query assignment_submissions materialized view
     $qry = <<<EOT
