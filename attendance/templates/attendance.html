@@ -17,13 +17,13 @@
 				{% if course.lessons is not empty %}
 					{% for lesson in course.lessons %}
 						{% if lesson.assignments is not empty %}
-							<table class="courses">
-							<tr><th class="course-name" colspan="3">{{ lesson.name }}</th></tr>
+							<table class="assignments">
+							<tr><th class="lesson-name" colspan="3">{{ lesson.name }}</th></tr>
 								{% for assignment in lesson.assignments %}
-									<tr>
-									<td>{{ assignment.type_fmt }}: {{ assignment.name|raw }}</td>
-									<td>Grade: {{ assignment.grade_letter }}</td>
-									<td>{{ assignment.max_submission_date is empty ? "--" : assignment.max_submission_date|date('l, F j, h:i A') }}</td>
+									<tr class="assignment">
+									<td class="assignment-name">{{ assignment.type_fmt }}: {{ assignment.name|raw }}</td>
+									<td class="assignment-grade">Grade: {{ assignment.grade_letter }}</td>
+									<td class="submission-date">{{ assignment.max_submission_date is empty ? "--" : assignment.max_submission_date|date('l, F j, h:i A') }}</td>
 									</tr>
 								{% endfor %}
 							</table>

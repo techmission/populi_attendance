@@ -104,10 +104,23 @@ td:first-child, th:first-child {
   empty-cells: hide; /* Hide empty cells when they're the first in the row */
 }
 
-table.courses {
-  min-width: 500px;
+table.courses, table.assignments {
+  min-width: 600px;
 }
 
-table.courses td.course-name {
-  width: 400px;
+table.courses td.course-name, table.assignments td.lesson-name {
+  width: 600px;
+}
+
+td.assignment-name {
+  width: 300px;
+}
+
+td.assignment-grade {
+  width: 100px;
+}
+
+td.submission-date {
+  width: 200px;
+}
 }
