@@ -220,6 +220,7 @@ EOT;
 
 /* Translate a grade into a letter grade */
 function get_grade_letter($grade_pct) {
+  global $DB;
   // Some basic error checking
   if(!is_numeric($grade_pct) || $grade_pct < 0) {
     script_log($grade_pct . ' was not a number', LEVEL_ERROR);
