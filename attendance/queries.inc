@@ -202,6 +202,9 @@ EOT;
   if(!is_array($submission_date_info) || $submission_date_info['max_added_time'] == NULL) {
     $submission_info['max_submission_date'] = NULL;
   }
+  else {
+	$submission_info['max_submission_date'] = $submission_date_info['max_added_time'];
+  }
   // 4. Format the grades
   if(is_numeric($grade_pct) && $grade_pct > 0) {
     $grade_letter = get_grade_letter($grade_pct);
