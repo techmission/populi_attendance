@@ -24,7 +24,7 @@ function get_attendance_data($personid, $firstname, $lastname) {
       // Step 4: For each lesson get the assignments and add to array
       foreach($attendance_data['terms'][$termid]['courses'][$courseid]['lessons'] as $lessonid => $lessons) {
         $assignments = get_assignments_by_lesson($lessonid);
-		script_log(print_r($assignments, TRUE), LEVEL_DEBUG);
+		// script_log(print_r($assignments, TRUE), LEVEL_DEBUG);
          // Step 5: For each assignment, get the submission info and add to array
         foreach($assignments as $assignmentid => $assignment) {
           $submission_info = get_assignment_submission_info($assignmentid, $assignment['type'], $personid);
@@ -32,6 +32,7 @@ function get_attendance_data($personid, $firstname, $lastname) {
           // https://stackoverflow.com/questions/3292044
           $assignments[$assignmentid] = $assignments[$assignmentid] + $submission_info;
         }
+		script_log(print_r($assignments, TRUE), LEVEL_DEBUG);
 		//$assignments = array(array('type_fmt' => 'Assignment', 'name' => 'test', 'max_submission_date' => '2017-09-09 18:26:38', 'grade_letter' => 'A'));
         $attendance_data['terms'][$termid]['courses'][$courseid]['lessons'][$lessonid]['assignments'] = $assignments;
       }
@@ -134,11 +135,11 @@ WHERE lessonid = :lessonid AND status = 'ACTIVE' AND type NOT IN ('ATTENDANCE', 
 ORDER BY orderid ASC, name ASC, timedue ASC
 EOT;
   $stmt = $DB->prepare($qry);
-  log_query($qry, array('lessonid' => $lessonid));
+  // log_query($qry, array('lessonid' => $lessonid));
   $stmt->bindValue('lessonid', $lessonid, PDO::PARAM_INT);
   $stmt->execute();
   // fetch array
-  $results = $stmt->fetchAll(PDO::FETCH_UNIQUE);
+  $assignments = $stmt->fetchAll(PDO::FETCH_UNIQUE);
   // array of assignments, with names, sorted by order in lesson
   return $assignments;
 }
