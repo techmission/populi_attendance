@@ -166,7 +166,7 @@ join forum_topic_comments fc on f.topic_id = fc.topic_id
 where f.assignment_id = :assignmentid and fc.added_by = :personid and fc.parent_comment_id = 0 group by f.assignment_id
 EOT;
     $stmt = $DB->prepare($qry);
-	// log_query($qry, array('assignmentid' => $assignmentid, 'personid' => $personid));
+	log_query($qry, array('assignmentid' => $assignmentid, 'personid' => $personid));
     $stmt->bindValue('assignmentid', $assignmentid, PDO::PARAM_INT);
     $stmt->bindValue('personid', $personid, PDO::PARAM_INT);
     $stmt->execute();
@@ -180,7 +180,7 @@ select min(av.added_time) as min_added_time, max(av.added_time) as max_added_tim
 where av.assignment_id = :assignmentid and av.student_id = :personid and av.added_by = :personid group by av.assignment_id
 EOT;
     $stmt = $DB->prepare($qry);
-	// log_query($qry, array('assignmentid' => $assignmentid, 'personid' => $personid));
+	log_query($qry, array('assignmentid' => $assignmentid, 'personid' => $personid));
     $stmt->bindValue('assignmentid', $assignmentid, PDO::PARAM_INT);
     $stmt->bindValue('personid', $personid, PDO::PARAM_INT);
     $stmt->execute();
