@@ -91,7 +91,8 @@ input, button, select {
 
 /* TABLES */
 table {
-  border-collapse: collapse; /* Merges cell borders together */
+  border-collapse: collapse; /* Merges cell borders together */]
+  table-layout: fixed;
   /* Browser default: border-collapse: separate; border-spacing: 2px; */
 }
 td, th {
