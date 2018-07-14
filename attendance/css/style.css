@@ -106,15 +106,15 @@ td:first-child, th:first-child {
 }
 
 table.courses, table.assignments {
-  min-width: 600px;
+  width: 800px;
 }
 
-table.courses td.course-name, table.assignments td.lesson-name {
-  width: 600px;
+table.assignments th.lesson-name {
+  width: 800px;
 }
 
 td.assignment-name {
-  width: 300px;
+  width: 500px;
 }
 
 td.assignment-grade {
@@ -123,5 +123,4 @@ td.assignment-grade {
 
 td.submission-date {
   width: 200px;
-}
 }
