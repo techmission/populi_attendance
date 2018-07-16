@@ -32,7 +32,8 @@ function get_attendance_data($personid, $firstname, $lastname) {
           // https://stackoverflow.com/questions/3292044
           $assignments[$assignmentid] = $assignments[$assignmentid] + $submission_info;
         }
-		script_log(print_r($assignments, TRUE), LEVEL_DEBUG);
+		//script_log(print_r($assignments, TRUE), LEVEL_DEBUG);
+		// Testing the format on an assignment (debug only)
 		//$assignments = array(array('type_fmt' => 'Assignment', 'name' => 'test', 'max_submission_date' => '2017-09-09 18:26:38', 'grade_letter' => 'A'));
         $attendance_data['terms'][$termid]['courses'][$courseid]['lessons'][$lessonid]['assignments'] = $assignments;
       }
@@ -156,6 +157,8 @@ function get_assignment_submission_info($assignmentid, $assignment_type, $person
   global $DB;
   $submission_date_info = NULL;
   $grade_pct = NULL;
+  $submission_info = array();
+  // TODO: add the minimums as well as the maximums
   // 1. get submission dates
   // if forum, get submission dates from discussion table
   if($assignment_type == 'DISCUSSION') {
@@ -173,14 +176,16 @@ EOT;
     // fetch a single row
     $submission_date_info = $stmt->fetch(PDO::FETCH_ASSOC);
   }
-  // if query the tests table for when a test was taken
+  // if test, query the tests table for when a test was taken
+  // Add group by for test id, in case they took it multiple times
   else if($assignment_type == 'TEST') {
     $qry = <<<EOT
-select ati.start_time as min_added_time, ati.end_time as max_added_time from assignment_test_instances ati 
+select t.testid, min(ati.end_time) as min_added_time, max(ati.end_time) as max_end_time from assignment_test_instances ati 
 join assignment_tests t on t.testid = ati.testid 
 where ati.grade_coef != 0
 and t.assignmentid = :assignmentid
 and ati.studentid = :personid
+group by t.testid
 EOT;
     $stmt = $DB->prepare($qry);
     log_query($qry, array('assignmentid' => $assignmentid, 'personid' => $personid));
@@ -190,11 +195,14 @@ EOT;
     // fetch a single row
     $submission_date_info = $stmt->fetch(PDO::FETCH_ASSOC);
   }
-  // otherwise, query the materialized view of the assignment_submissions table 
+  // otherwise, query the assignment_submissions table:
+  // need to show only submissions by the student, where there was a file submitted
   else {
     $qry = <<<EOT
-select min(av.added_time) as min_added_time, max(av.added_time) as max_added_time from mv_assignment_submissions_1718 av 
-where av.assignment_id = :assignmentid and av.student_id = :personid and av.added_by = :personid group by av.assignment_id
+select min(av.added_time) as min_added_time, max(av.added_time) as max_added_time from assignment_submissions a 
+where a.assignment_id = :assignmentid and a.student_id = :personid and a.added_by = :personid a
+and a.file_id != ''
+group by a.assignment_id
 EOT;
     $stmt = $DB->prepare($qry);
     //log_query($qry, array('assignmentid' => $assignmentid, 'personid' => $personid));
@@ -215,18 +223,11 @@ EOT;
   // fetch a single datum
   $grade_pct = $stmt->fetchColumn();
   
-  // 3. Prepare date object
+  // 3. Prepare date objects for minimum and maximum dates
   // Put in NULL if no date (use Twig to format dates - see https://twig.symfony.com/doc/1.x/filters/date.html)
-  if(!is_array($submission_date_info) || $submission_date_info['max_added_time'] == NULL) {
-    $submission_info['max_submission_date'] = NULL;
-  }
-  else {
-    // Create DateTime object in order to set timezone
-    $dt = new DateTime($submission_date_info['max_added_time'], new DateTimeZone('UTC'));
-    // Set to Central Time (https://stackoverflow.com/questions/4989209)
-    $dt->setTimeZone(new DateTimeZone('America/Chicago'));
-    $submission_info['max_submission_date'] = $dt;
-  }
+  $submission_info['min_submission_date'] = get_submission_date($submission_date_info, 'min');
+  $submission_info['max_submission_date'] = get_submission_date($submission_date_info, 'max');
+
   // 4. Format the grades
   if(is_numeric($grade_pct) && $grade_pct > 0) {
     $grade_letter = get_grade_letter($grade_pct);
@@ -240,10 +241,33 @@ EOT;
   // 5. Format the assignment type
   $submission_info['type_fmt'] = format_assignment_type($assignment_type);
 
-  // Build the array
-  // this array will be merged back into the assignment array
-  
+  //  return the submission_info array: this array will be merged back into the assignment array  
   return $submission_info;  
+}
+
+function get_submission_date($submission_date_info, $date_type) {
+  $dt = NULL;
+  if($date_type == 'min') {
+    $array_source = 'min_added_time';
+  }
+  else {
+    $array_source = 'max_added_time';
+  }
+  
+  // if there is no date to operate on, return this as NULL
+  if(!is_array($submission_date_info) || $submission_date_info[$array_source] == NULL) {
+    $dt = NULL;
+  }
+  else {
+    // Create DateTime object in order to set timezone
+	// Need to define as UTC first since that's what Populi stores as.
+    $dt = new DateTime($submission_date_info['max_added_time'], new DateTimeZone('UTC'));
+    // Set to settings-defined timezone.
+    // Note that this needs to be changed here even though display layer requests to show in same TimeZone
+    $dt->setTimeZone(new DateTimeZone(CUR_TZ));
+    $submission_info[$array_target] = $dt;
+  }
+  return $dt;
 }
 
 /**

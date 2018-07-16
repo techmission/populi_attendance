@@ -23,7 +23,8 @@
 									<tr class="assignment">
 									<td class="assignment-name">{{ assignment.type_fmt }}: {{ assignment.name|raw }}</td>
 									<td class="assignment-grade">Grade: {{ assignment.grade_letter }}</td>
-									<td class="submission-date">{{ assignment.max_submission_date is empty ? "--" : assignment.max_submission_date|localizeddate('long', 'short', NULL, 'America/Chicago') }}</td>
+									<!-- only show both first and last if they are different values -->
+									<td class="submission-date">{{ assignment.max_submission_date is empty ? "--" : assignment.max_submission_date|localizeddate('long', 'short', NULL, constant(CUR_TZ)) }}</td>
 									</tr>
 								{% endfor %}
 							</table>

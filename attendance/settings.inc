@@ -5,7 +5,12 @@
 define('LOG_MODE', MODE_DEBUG);
 
 /* Set whether to debug Twig or not */
-define('DEBUG_TWIG', TRUE);
+define('DEBUG_TWIG', FALSE);
 
 /* Name of logfile */
 define('LOGFILE', 'attendance.log');
+
+/* Name of timezone for City Vision - Central Time 
+   cf. https://stackoverflow.com/questions/4989209
+*/
+define('CUR_TZ', 'America/Chicago');
