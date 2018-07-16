@@ -166,22 +166,37 @@ join forum_topic_comments fc on f.topic_id = fc.topic_id
 where f.assignment_id = :assignmentid and fc.added_by = :personid and fc.parent_comment_id = 0 group by f.assignment_id
 EOT;
     $stmt = $DB->prepare($qry);
-	log_query($qry, array('assignmentid' => $assignmentid, 'personid' => $personid));
+    //log_query($qry, array('assignmentid' => $assignmentid, 'personid' => $personid));
     $stmt->bindValue('assignmentid', $assignmentid, PDO::PARAM_INT);
     $stmt->bindValue('personid', $personid, PDO::PARAM_INT);
     $stmt->execute();
     // fetch a single row
     $submission_date_info = $stmt->fetch(PDO::FETCH_ASSOC);
   }
-  // FIXME: add logic to query the tests table for when a test was taken
+  // if query the tests table for when a test was taken
+  else if($assignment_type == 'TEST') {
+    $qry = <<<EOT
+select ati.start_time as min_added_time, ati.end_time as max_added_time from assignment_test_instances ati 
+join people p on p.personid = ati.studentid 
+join assignment_tests t on t.testid = ati.testid 
+where ati.grade_coef != 0
+EOT;
+    $stmt = $DB->prepare($qry);
+    log_query($qry, array('assignmentid' => $assignmentid, 'personid' => $personid));
+    $stmt->bindValue('assignmentid', $assignmentid, PDO::PARAM_INT);
+    $stmt->bindValue('personid', $personid, PDO::PARAM_INT);
+    $stmt->execute();
+    // fetch a single row
+    $submission_date_info = $stmt->fetch(PDO::FETCH_ASSOC);
+  }
+  // otherwise, query the materialized view of the assignment_submissions table 
   else {
-    // query assignment_submissions materialized view
     $qry = <<<EOT
 select min(av.added_time) as min_added_time, max(av.added_time) as max_added_time from mv_assignment_submissions_1718 av 
 where av.assignment_id = :assignmentid and av.student_id = :personid and av.added_by = :personid group by av.assignment_id
 EOT;
     $stmt = $DB->prepare($qry);
-	log_query($qry, array('assignmentid' => $assignmentid, 'personid' => $personid));
+    //log_query($qry, array('assignmentid' => $assignmentid, 'personid' => $personid));
     $stmt->bindValue('assignmentid', $assignmentid, PDO::PARAM_INT);
     $stmt->bindValue('personid', $personid, PDO::PARAM_INT);
     $stmt->execute();
@@ -204,7 +219,7 @@ EOT;
     $submission_info['max_submission_date'] = NULL;
   }
   else {
-	$submission_info['max_submission_date'] = $submission_date_info['max_added_time'];
+    $submission_info['max_submission_date'] = $submission_date_info['max_added_time'];
   }
   // 4. Format the grades
   if(is_numeric($grade_pct) && $grade_pct > 0) {
