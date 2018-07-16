@@ -180,7 +180,7 @@ EOT;
   // Add group by for test id, in case they took it multiple times
   else if($assignment_type == 'TEST') {
     $qry = <<<EOT
-select t.testid, min(ati.end_time) as min_added_time, max(ati.end_time) as max_end_time from assignment_test_instances ati 
+select t.testid, min(ati.end_time) as min_added_time, max(ati.end_time) as max_added_time from assignment_test_instances ati 
 join assignment_tests t on t.testid = ati.testid 
 where ati.grade_coef != 0
 and t.assignmentid = :assignmentid
