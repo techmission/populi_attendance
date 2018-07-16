@@ -199,7 +199,7 @@ EOT;
   // need to show only submissions by the student, where there was a file submitted
   else {
     $qry = <<<EOT
-select min(av.added_time) as min_added_time, max(av.added_time) as max_added_time from assignment_submissions a 
+select min(a.added_time) as min_added_time, max(a.added_time) as max_added_time from assignment_submissions a 
 where a.assignment_id = :assignmentid and a.student_id = :personid and a.added_by = :personid 
 and a.file_id != '' 
 group by a.assignment_id
