@@ -214,14 +214,14 @@ EOT;
   }
   
   // 2. get the grade, if any
-  $qry = "select g.grade from course_grades g where g.assignmentid = :assignmentid and g.studentid = :personid";
+  $qry = "select g.grade as pct from course_grades g where g.assignmentid = :assignmentid and g.studentid = :personid";
   // log_query($qry, array('assignmentid' => $assignmentid, 'personid' => $personid));
   $stmt = $DB->prepare($qry);
   $stmt->bindValue('assignmentid', $assignmentid, PDO::PARAM_INT);
   $stmt->bindValue('personid', $personid, PDO::PARAM_INT);
   $stmt->execute();
-  // fetch a single datum
-  $grade_pct = $stmt->fetchColumn();
+  // fetch a single row (need to be able to differentiate 0's from no grade at all)
+  $grade_result = $stmt->fetch(PDO::FETCH_ASSOC);
   
   // 3. Prepare date objects for minimum and maximum dates
   // Put in NULL if no date (use Twig to format dates - see https://twig.symfony.com/doc/1.x/filters/date.html)
@@ -229,8 +229,9 @@ EOT;
   $submission_info['max_submission_date'] = get_submission_date($submission_date_info, 'max');
 
   // 4. Format the grades
-  if(is_numeric($grade_pct) && $grade_pct >= 0) {
-    $grade_letter = get_grade_letter($grade_pct);
+  // Get a letter grade (including for F's), if there is a grade percent
+  if(is_array($grade_result) && count($grade_result) == 1 && is_numeric($grade_result['pct']) && $grade_result['pct'] >= 0) {
+    $grade_letter = get_grade_letter($grade_result['pct']);
   }
   //  Put in “--” if no submission, or no grade (for now, don’t differentiate between those cases)
   else {
