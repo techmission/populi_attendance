@@ -188,7 +188,7 @@ and ati.studentid = :personid
 group by t.testid
 EOT;
     $stmt = $DB->prepare($qry);
-    log_query($qry, array('assignmentid' => $assignmentid, 'personid' => $personid));
+    // log_query($qry, array('assignmentid' => $assignmentid, 'personid' => $personid));
     $stmt->bindValue('assignmentid', $assignmentid, PDO::PARAM_INT);
     $stmt->bindValue('personid', $personid, PDO::PARAM_INT);
     $stmt->execute();
@@ -222,6 +222,7 @@ EOT;
   $stmt->execute();
   // fetch a single row (need to be able to differentiate 0's from no grade at all)
   $grade_result = $stmt->fetch(PDO::FETCH_ASSOC);
+  script_log(print_r($grade_result, TRUE), LEVEL_DEBUG);
   
   // 3. Prepare date objects for minimum and maximum dates
   // Put in NULL if no date (use Twig to format dates - see https://twig.symfony.com/doc/1.x/filters/date.html)
@@ -277,11 +278,6 @@ function get_submission_date($submission_date_info, $date_type) {
 /* Translate a grade into a letter grade */
 function get_grade_letter($grade_pct) {
   global $DB;
-  // Some basic error checking
-  if(!is_numeric($grade_pct) || $grade_pct < 0) {
-    script_log($grade_pct . ' was not a number', LEVEL_ERROR);
-    return NULL;
-  }
   // Get the grading scale
   $qry = <<<EOT
 select gp.letter, gp.min_points, gp.grade_points, gp.direct_equivalent, gp.fail from grade_points gp 
