@@ -24,6 +24,10 @@ function bootstrap() {
     $twig_cache_dir = 'twig_cache';
   }
   $TWIG = new Twig_Environment($loader, array('cache' => $twig_cache_dir, 'auto_reload' => TRUE));
+  // Add internationalization and set locale, for date formatting by timezone (requires Twig extensions)
+  $TWIG->addExtension(new Twig_Extensions_Extension_Intl());
+  // English (United States)
+  Locale::setDefault('en-US');
 
   // Connect to database using PDO
   $DB = db_connect();

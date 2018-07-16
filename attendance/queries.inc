@@ -215,11 +215,16 @@ EOT;
   // fetch a single datum
   $grade_pct = $stmt->fetchColumn();
   
-  // 3. Put in NULL if no date (use Twig to format dates - see https://twig.symfony.com/doc/1.x/filters/date.html)
+  // 3. Prepare date object
+  // Put in NULL if no date (use Twig to format dates - see https://twig.symfony.com/doc/1.x/filters/date.html)
   if(!is_array($submission_date_info) || $submission_date_info['max_added_time'] == NULL) {
     $submission_info['max_submission_date'] = NULL;
   }
   else {
+    // Create DateTime object in order to set timezone
+    //$dt = new DateTime($submission_date_info['max_added_time'], new DateTimeZone('UTC'));
+    // Set to Central Time (https://stackoverflow.com/questions/4989209)
+    //$dt->setTimeZone(new DateTimeZone('America/Chicago'));
     $submission_info['max_submission_date'] = $submission_date_info['max_added_time'];
   }
   // 4. Format the grades

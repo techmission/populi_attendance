@@ -23,7 +23,7 @@
 									<tr class="assignment">
 									<td class="assignment-name">{{ assignment.type_fmt }}: {{ assignment.name|raw }}</td>
 									<td class="assignment-grade">Grade: {{ assignment.grade_letter }}</td>
-									<td class="submission-date">{{ assignment.max_submission_date is empty ? "--" : assignment.max_submission_date|date('l, F j, h:i A') }}</td>
+									<td class="submission-date">{{ assignment.max_submission_date is empty ? "--" : assignment.max_submission_date|localizeddate('long', 'long', NULL, 'America/Chicago') }}</td>
 									</tr>
 								{% endfor %}
 							</table>
