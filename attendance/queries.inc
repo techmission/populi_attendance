@@ -299,6 +299,10 @@ EOT;
        $grade_letter = $result['letter'];
        break;
     }
+	// grades with 0 percent are F's
+	else if($grade_pct === 0) {
+      $grade_letter = 'F';
+	}
   }
   return $grade_letter;
 }
