@@ -229,7 +229,7 @@ EOT;
   $submission_info['max_submission_date'] = get_submission_date($submission_date_info, 'max');
 
   // 4. Format the grades
-  if(is_numeric($grade_pct) && $grade_pct > 0) {
+  if(is_numeric($grade_pct) && $grade_pct >= 0) {
     $grade_letter = get_grade_letter($grade_pct);
   }
   //  Put in “--” if no submission, or no grade (for now, don’t differentiate between those cases)
@@ -245,6 +245,10 @@ EOT;
   return $submission_info;  
 }
 
+/**
+  Helper functions 
+ */
+ 
 function get_submission_date($submission_date_info, $date_type) {
   $dt = NULL;
   if($date_type == 'min') {
@@ -268,10 +272,6 @@ function get_submission_date($submission_date_info, $date_type) {
   }
   return $dt;
 }
-
-/**
-  Helper functions 
- */
 
 /* Translate a grade into a letter grade */
 function get_grade_letter($grade_pct) {
