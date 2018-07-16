@@ -222,10 +222,10 @@ EOT;
   }
   else {
     // Create DateTime object in order to set timezone
-    //$dt = new DateTime($submission_date_info['max_added_time'], new DateTimeZone('UTC'));
+    $dt = new DateTime($submission_date_info['max_added_time'], new DateTimeZone('UTC'));
     // Set to Central Time (https://stackoverflow.com/questions/4989209)
-    //$dt->setTimeZone(new DateTimeZone('America/Chicago'));
-    $submission_info['max_submission_date'] = $submission_date_info['max_added_time'];
+    $dt->setTimeZone(new DateTimeZone('America/Chicago'));
+    $submission_info['max_submission_date'] = $dt;
   }
   // 4. Format the grades
   if(is_numeric($grade_pct) && $grade_pct > 0) {
