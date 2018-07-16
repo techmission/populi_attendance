@@ -177,9 +177,10 @@ EOT;
   else if($assignment_type == 'TEST') {
     $qry = <<<EOT
 select ati.start_time as min_added_time, ati.end_time as max_added_time from assignment_test_instances ati 
-join people p on p.personid = ati.studentid 
 join assignment_tests t on t.testid = ati.testid 
 where ati.grade_coef != 0
+and t.assignmentid = :assignmentid
+and ati.studentid = :personid
 EOT;
     $stmt = $DB->prepare($qry);
     log_query($qry, array('assignmentid' => $assignmentid, 'personid' => $personid));
