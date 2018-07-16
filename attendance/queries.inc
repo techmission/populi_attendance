@@ -260,12 +260,11 @@ function get_submission_date($submission_date_info, $date_type) {
   }
   else {
     // Create DateTime object in order to set timezone
-	// Need to define as UTC first since that's what Populi stores as.
-    $dt = new DateTime($submission_date_info['max_added_time'], new DateTimeZone('UTC'));
+    // Need to define as UTC first since that's what Populi stores as.
+    $dt = new DateTime($submission_date_info[$array_source], new DateTimeZone('UTC'));
     // Set to settings-defined timezone.
     // Note that this needs to be changed here even though display layer requests to show in same TimeZone
     $dt->setTimeZone(new DateTimeZone(CUR_TZ));
-    $submission_info[$array_target] = $dt;
   }
   return $dt;
 }
