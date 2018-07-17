@@ -3,6 +3,11 @@
 /* Main business logic function: queries Salesforce and populates the attendance data array */
 function get_attendance_data($personid, $firstname, $lastname) {
   $attendance_data = array();
+  
+  // Add personid (for debugging)
+  $attendance_data['personid'] = $personid;
+  
+  // Add firstname and lastname (used in heading)
   $attendance_data['firstname'] = $firstname;
   $attendance_data['lastname'] = $lastname;
   

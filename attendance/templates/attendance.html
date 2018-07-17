@@ -18,7 +18,8 @@
 					{% for lesson in course.lessons %}
 						{% if lesson.assignments is not empty %}
 							<table class="assignments">
-							<tr><th class="lesson-name" colspan="3">{{ lesson.name }}</th></tr>
+							{# show the week name unescaped, since it may have quotes or ampersands in the DB #}
+							<tr><th class="lesson-name" colspan="3">{{ lesson.name|raw }}</th></tr>
 								{% for assignment in lesson.assignments %}
 									<tr class="assignment">
 									{# show the assignment type and name (unescaped, since it may have quotes) #}
