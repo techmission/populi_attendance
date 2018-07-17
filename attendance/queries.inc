@@ -316,7 +316,7 @@ EOT;
   foreach($results as $result) {
     // iterate through grade scale
     // if a match, end loop
-    if($grade_pct > $result['min_points']) {
+    if($grade_pct >= $result['min_points']) {
        $grade_letter = $result['letter'];
        break;
     }
