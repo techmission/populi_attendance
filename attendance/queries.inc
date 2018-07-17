@@ -280,10 +280,10 @@ function get_grade_letter($grade_pct) {
   global $DB;
   $grade_letter = NULL;
   // return early if the student got a 0 on the assignment
-  if($grade_pct === 0) {
-      $grade_letter = 'F';
-      return $grade_letter;
-  }
+  //if($grade_pct == 0) {
+   //   $grade_letter = 'F';
+  //   return $grade_letter;
+  //}
   // Get the grading scale
   $qry = <<<EOT
 select gp.letter, gp.min_points, gp.grade_points, gp.direct_equivalent, gp.fail from grade_points gp 
@@ -302,6 +302,9 @@ EOT;
        $grade_letter = $result['letter'];
        break;
     }
+	else if($grade_pct == 0) {
+	  $grade_letter = 'F';
+	}
   }
   return $grade_letter;
 }
