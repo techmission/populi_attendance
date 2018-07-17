@@ -19,10 +19,15 @@ if(!isset($_GET['key']) && $_GET['key'] != GUID) {
   echo $template->render(array('vars' => $VARS));
 }
 
-// Build the attendance data array; uses data from $_GET
-$attendance_data = build_attendance_data();
+// Build the attendance data array and accompanying settings for rendering via Twig; uses data from $_GET
+// Current setting is ?show_grades=1 or 0 to show the grades as well as submission dates
+$twig_vars = build_attendance_data();
+
+// Add debugging variables to twig
+$twig_vars['a_pre'] = print_r($attendance_data, TRUE);
+$twig_vars['vars'] = $VARS;
 
 // Render the attendance data using the default template
 $template = $TWIG->load(TEMPLATE_FILE);
-echo $template->render(array('a' => $attendance_data, 'vars' => $VARS, 'a_pre' => print_r($attendance_data, TRUE)));
+echo $template->render($twig_vars);
 ?>

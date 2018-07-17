@@ -60,10 +60,24 @@ function build_attendance_data() {
   }
   
   $attendance_data = get_attendance_data($personid, $_GET['firstname'], $_GET['lastname']);
+  
+  // check whether to show the grades or not based on query string parameter
+  if(isset($_GET['show_grades']) && $_GET['show_grades'] == TRUE) {
+    $show_grades = TRUE;
+  }
+  else {
+    $show_grades = FALSE;
+  }
+  
+  // return to entry-point PHP page if there is valid attendance data, passing Twig variables
+  // set to show grades if that was passed in the query string
+  
   // TODO: more robust checking in is_attendance_data_valid
   if(is_attendance_data_valid($attendance_data)) {
-    return $attendance_data;
+    $twig_vars = array('a' => $attendance_data, 'show_grades' => $show_grades);
+	return $twig_vars;
   }
+  // if not, return an error page
   else {
     build_error_page(ERROR_INVALID_DATA, array('attendance_data' => $attendance_data));
   }
