@@ -230,6 +230,7 @@ EOT;
 
 /* Get grade info (pass submission_info array by reference to set variables */
 function get_grade_info($assignmentid, $personid, &$submission_info) {
+  global $DB;
   if($submission_info['min_submission_date'] != NULL || $submission_info['max_submission_date'] != NULL) {
 	  $qry = "select g.grade as pct from course_grades g where g.assignmentid = :assignmentid and g.studentid = :personid";
       // log_query($qry, array('assignmentid' => $assignmentid, 'personid' => $personid));
