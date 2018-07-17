@@ -23,8 +23,10 @@ if(!isset($_GET['key']) && $_GET['key'] != GUID) {
 // Current setting is ?show_grades=1 or 0 to show the grades as well as submission dates
 $twig_vars = build_attendance_data();
 
-// Add debugging variables to twig
-$twig_vars['a_pre'] = print_r($attendance_data, TRUE);
+/* Add debugging variables to Twig template */
+// Preformatted attendance array
+$twig_vars['a_pre'] = print_r($twig_vars['a'], TRUE);
+// Internal twig debugging variables
 $twig_vars['vars'] = $VARS;
 
 // Render the attendance data using the default template
