@@ -163,7 +163,7 @@ function get_assignment_submission_info($assignmentid, $assignment_type, $person
   // if forum, get submission dates from discussion table
   // count only top-level forum posts that are not edits and are not deleted
   if($assignment_type == 'DISCUSSION') {
-    // pdo query (checked)
+    // 1a. Do default query off forums table
     $qry = <<<EOT
 select f.topic_id, min(fc.added_at) as min_added_time, max(fc.added_at) as max_added_time from forum_topics f 
 join forum_topic_comments fc on f.topic_id = fc.topic_id 
@@ -178,6 +178,26 @@ EOT;
     $stmt->execute();
     // fetch a single row
     $submission_date_info = $stmt->fetch(PDO::FETCH_ASSOC);
+    // 1b. try looking in assignment submissions if that did not work
+    if(!is_array($submission_date_info) || empty($submission_date_info['min_added_time'])) {
+      $qry = <<<EOT
+select min(a.added_time) as min_added_time, max(a.added_time) as max_added_time from assignment_submissions a
+join course_assignments ca on ca.assignmentid = a.assignment_id
+join course_grades g on g.assignmentid = a.assignment_id and g.studentid = a.student_id
+and a.student_id = a.added_by
+and a.assignment_id = :assignmentid
+and a.student_id = :personid
+and g.grade > 0
+group by a.assignment_id
+EOT;
+      $stmt = $DB->prepare($qry);
+      //log_query($qry, array('assignmentid' => $assignmentid, 'personid' => $personid));
+      $stmt->bindValue('assignmentid', $assignmentid, PDO::PARAM_INT);
+      $stmt->bindValue('personid', $personid, PDO::PARAM_INT);
+      $stmt->execute();
+      // fetch a single row
+      $submission_date_info = $stmt->fetch(PDO::FETCH_ASSOC);
+    }
   }
   // if test, query the tests table for when a test was taken
   // Add group by for test id, in case they took it multiple times
