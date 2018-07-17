@@ -231,7 +231,7 @@ EOT;
 
   // 4. Format the grades
   // Get a letter grade (including for F's), if there is a grade percent
-  if(is_array($grade_result) && count($grade_result) == 1 && ($grade_result['pct'] > 0 || $grade_result['pct'] == 0)) {
+  if(is_array($grade_result) && count($grade_result) == 1 && $grade_result['pct'] >= 0) {
     $grade_letter = get_grade_letter($grade_result['pct']);
   }
   //  Put in “--” if no submission, or no grade (for now, don’t differentiate between those cases)
@@ -279,11 +279,6 @@ function get_submission_date($submission_date_info, $date_type) {
 function get_grade_letter($grade_pct) {
   global $DB;
   $grade_letter = NULL;
-  // return early if the student got a 0 on the assignment
-  //if($grade_pct == 0) {
-   //   $grade_letter = 'F';
-  //   return $grade_letter;
-  //}
   // Get the grading scale
   $qry = <<<EOT
 select gp.letter, gp.min_points, gp.grade_points, gp.direct_equivalent, gp.fail from grade_points gp 
