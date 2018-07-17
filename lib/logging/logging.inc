@@ -32,12 +32,12 @@ function custom_exception_handler($ex) {
 }
 
 /* set with set_exception_handler('error_page_handler') */
-function error_page_handler ($code, $message, $file, $line, $context ) {
+function error_page_handler ($code, $message, $file, $line, $context = NULL) {
   global $TWIG;
   if($code === E_ERROR || $code === E_WARNING) {
     header('HTTP/1.1 500 Internal Server Error', TRUE, 500);
     // Log the error
-    script_log($message . ' in ' . $file . ' on ' . $line . ' in ' . $context, LEVEL_ERROR);
+    script_log($message . ' in ' . $file . ' on ' . $line, LEVEL_ERROR);
     // Build the error page (get_defined_vars() is an array of the variables in the function)
     build_error_page(ERROR_PHP_ERROR, array('error_info' => get_defined_vars()));
   }
