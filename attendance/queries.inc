@@ -69,7 +69,7 @@ function get_terms_by_person($personid) {
 SELECT c.termid, c.term_name AS name FROM mv_courses_1718 c 
 JOIN mv_enrollments_1718 e ON c.instanceid = e.instanceid JOIN mv_students_1718 s ON s.personid = e.studentid 
 WHERE s.personid = :personid 
-#AND c.termid != 191581
+AND c.termid != 191581
 GROUP BY c.termid 
 ORDER BY c.term_start_date ASC
 EOT;
@@ -161,12 +161,15 @@ function get_assignment_submission_info($assignmentid, $assignment_type, $person
 
   // 1. Get submission dates
   // if forum, get submission dates from discussion table
+  // count only top-level forum posts that are not edits and are not deleted
   if($assignment_type == 'DISCUSSION') {
     // pdo query (checked)
     $qry = <<<EOT
 select f.topic_id, min(fc.added_at) as min_added_time, max(fc.added_at) as max_added_time from forum_topics f 
 join forum_topic_comments fc on f.topic_id = fc.topic_id 
-where f.assignment_id = :assignmentid and fc.added_by = :personid and fc.parent_comment_id = 0 group by f.assignment_id
+where f.assignment_id = :assignmentid and fc.added_by = :personid and fc.parent_comment_id = 0 
+and deleted_at = '' and edited_comment_id = 0
+group by f.assignment_id
 EOT;
     $stmt = $DB->prepare($qry);
     //log_query($qry, array('assignmentid' => $assignmentid, 'personid' => $personid));
