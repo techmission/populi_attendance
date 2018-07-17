@@ -73,7 +73,7 @@ function get_terms_by_person($personid) {
   $qry = <<<EOT
 SELECT c.termid, c.term_name AS name FROM mv_courses_1718 c 
 JOIN mv_enrollments_1718 e ON c.instanceid = e.instanceid JOIN mv_students_1718 s ON s.personid = e.studentid 
-JOIN course_time_tracking ct ON ct.studentid = s.personid AND ct.course_instance_id = e.instanceid AND c.owner_type = 'COURSE' 
+JOIN course_time_tracking ct ON ct.student_id = s.personid AND ct.course_instance_id = e.instanceid AND c.owner_type = 'COURSE' 
 WHERE s.personid = :personid 
 AND c.termid != 191581
 AND ct.last_update_time > c.add_drop_time 
@@ -100,7 +100,7 @@ function get_courses_by_term($personid, $termid) {
   $qry = <<<EOT
 SELECT c.instanceid, c.name FROM mv_courses_1718 c 
 JOIN mv_enrollments_1718 e ON c.instanceid = e.instanceid JOIN mv_students_1718 s ON s.personid = e.studentid 
-JOIN course_time_tracking ct ON ct.studentid = s.personid AND ct.course_instance_id = e.instanceid AND c.owner_type = 'COURSE' 
+JOIN course_time_tracking ct ON ct.student_id = s.personid AND ct.course_instance_id = e.instanceid AND c.owner_type = 'COURSE' 
 WHERE s.personid = :personid and c.termid = :termid 
 AND ct.last_update_time > c.add_drop_time 
 GROUP BY e.instanceid 
