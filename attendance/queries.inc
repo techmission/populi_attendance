@@ -231,7 +231,7 @@ EOT;
 
   // 4. Format the grades
   // Get a letter grade (including for F's), if there is a grade percent
-  if(is_array($grade_result) && count($grade_result) == 1 && ($grade_result['pct'] > 0 || $grade_result['pct'] === 0)) {
+  if(is_array($grade_result) && count($grade_result) == 1 && ($grade_result['pct'] > 0 || $grade_result['pct'] == 0)) {
     $grade_letter = get_grade_letter($grade_result['pct']);
   }
   //  Put in “--” if no submission, or no grade (for now, don’t differentiate between those cases)
