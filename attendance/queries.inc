@@ -69,7 +69,7 @@ function get_terms_by_person($personid) {
 SELECT c.termid, c.term_name AS name FROM mv_courses_1718 c 
 JOIN mv_enrollments_1718 e ON c.instanceid = e.instanceid JOIN mv_students_1718 s ON s.personid = e.studentid 
 WHERE s.personid = :personid 
-AND c.termid != 191581
+#AND c.termid != 191581
 GROUP BY c.termid 
 ORDER BY c.term_start_date ASC
 EOT;
@@ -240,21 +240,23 @@ function get_grade_info($assignmentid, $personid, &$submission_info) {
       $stmt->execute();
       // fetch a single row (need to be able to differentiate 0's from no grade at all)
       $grade_result = $stmt->fetch(PDO::FETCH_ASSOC);
-      script_log(print_r($grade_result, TRUE), LEVEL_DEBUG);
+      // script_log(print_r($grade_result, TRUE), LEVEL_DEBUG);
 
       // Format the grades:
       // Get a letter grade (including for F's), if there is a grade percent
       if(is_array($grade_result) && count($grade_result) == 1 && $grade_result['pct'] >= 0) {
         $grade_letter = get_grade_letter($grade_result['pct']);
       }
-      //  Put in “--” if no grade
-	  // TODO: not sure if this actually works properly - ungraded assignments may always show as a 0 based on the query above
+      //  Put in “--” if no grade (ungraded by professor) - for error checking on our part
+	  // This should only be OK on courses that are unfinalized
       else {
         $grade_letter = "--";
       }
   }
+  // If no submission, indicate a 0 for that
+  // Note that it appears that all assignments, even unsubmitted, get a 0 entered at the end of the term, so this is a presumption that non-submits are 0's
   else {
-    $grade_letter = "--";
+    $grade_letter = "Non-Submitted (F)";
   }
   
   $submission_info['grade_percent'] = $grade_result['pct'];
