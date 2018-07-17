@@ -21,10 +21,18 @@
 							<tr><th class="lesson-name" colspan="3">{{ lesson.name }}</th></tr>
 								{% for assignment in lesson.assignments %}
 									<tr class="assignment">
+									{# show the assignment type and name (unescaped, since it may have quotes) #}
 									<td class="assignment-name">{{ assignment.type_fmt }}: {{ assignment.name|raw }}</td>
+									{# only show grades if passed in as query string parameter: show_grades=1 #}
 									{% if show_grades == true %}<td class="assignment-grade">Grade: {{ assignment.grade_letter }}</td>{% endif %}
-									<!-- only show both first and last if they are different values -->
-									<td class="submission-date">{{ assignment.max_submission_date is empty ? "--" : assignment.max_submission_date|localizeddate('long', 'short', NULL, 'America/Chicago') }}</td>
+									{# only show both first and last if they are different values #}
+									{% if assignment.max_submission_date != assignment.min_submission_date %}
+									  <td class="submission-date">First: {{ assignment.min_submission_date is empty ? "--" : assignment.mim_submission_date|localizeddate('long', 'short', NULL, 'America/Chicago') }}<br/>
+									                            Last: {{ assignment.max_submission_date is empty ? "--" : assignment.max_submission_date|localizeddate('long', 'short', NULL, 'America/Chicago') }}
+								      </td>
+									{% else %}
+									  <td class="submission-date">{{ assignment.max_submission_date is empty ? "--" : assignment.max_submission_date|localizeddate('long', 'short', NULL, 'America/Chicago') }}</td>
+									{% endif }
 									</tr>
 								{% endfor %}
 							</table>
@@ -36,14 +44,14 @@
 	{% endfor %}
 {% endif %}
 
-<!-- if set to debug show the full attendance array -->
+{# if set to debug show the full attendance array #}
 {% if constant('LOG_MODE') is constant('MODE_DEBUG') %}
 	<h2>Attendance Array</h2>
 	<pre>
 	{{ a_pre }}
 	</pre>
 {% endif %}
-<!-- Dump twig variables here if set to debug twig -->
+{# Dump Twig variables here if set to debug Twig #}
 {% if constant('DEBUG_TWIG') == TRUE %}
 <h2>Twig Debug</h2>
 <pre>{{ vars }}</pre>

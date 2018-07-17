@@ -8,6 +8,7 @@
 <body>
 <h1>{{a.lastname|capitalize }}, {{a.firstname|capitalize}} Course Attendance Documentation</h1>
 
+{# simplified template that doesn't show assignments, just lessons / weeks #}
 {% if a.terms is not empty %}
 	{% for term in a.terms %}
 		<h2>{{ term.name }}</h2>
@@ -24,14 +25,14 @@
 	{% endfor %}
 {% endif %}
 
-<!-- if set to debug show the full attendance array -->
+{# if set to debug show the full attendance array #}
 {% if constant('LOG_MODE') is constant('MODE_DEBUG') %}
 	<h2>Attendance Array</h2>
 	<pre>
 	{{ a_pre }}
 	</pre>
 {% endif %}
-<!-- Dump twig variables here if set to debug twig -->
+{# Dump Twig variables here if set to debug Twig #}
 {% if constant('DEBUG_TWIG') == TRUE %}
 <h2>Twig Debug</h2>
 <pre>{{ vars }}</pre>
