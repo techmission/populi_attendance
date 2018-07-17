@@ -168,7 +168,7 @@ function get_assignment_submission_info($assignmentid, $assignment_type, $person
 select f.topic_id, min(fc.added_at) as min_added_time, max(fc.added_at) as max_added_time from forum_topics f 
 join forum_topic_comments fc on f.topic_id = fc.topic_id 
 where f.assignment_id = :assignmentid and fc.added_by = :personid and fc.parent_comment_id = 0 
-and deleted_at = '' and edited_comment_id = 0
+and fc.deleted_at = '' and fc.edited_comment_id = 0
 group by f.assignment_id
 EOT;
     $stmt = $DB->prepare($qry);
