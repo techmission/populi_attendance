@@ -27,7 +27,7 @@
 									{% if show_grades == true %}<td class="assignment-grade">Grade: {{ assignment.grade_letter }}</td>{% endif %}
 									{# only show both first and last if they are different values #}
 									{% if assignment.max_submission_date != assignment.min_submission_date %}
-									  <td class="submission-date">First: {{ assignment.min_submission_date is empty ? "--" : assignment.mim_submission_date|localizeddate('long', 'short', NULL, 'America/Chicago') }}<br/>
+									  <td class="submission-date">First: {{ assignment.min_submission_date is empty ? "--" : assignment.min_submission_date|localizeddate('long', 'short', NULL, 'America/Chicago') }}<br/>
 									                            Last: {{ assignment.max_submission_date is empty ? "--" : assignment.max_submission_date|localizeddate('long', 'short', NULL, 'America/Chicago') }}
 								      </td>
 									{% else %}
