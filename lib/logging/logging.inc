@@ -1,5 +1,11 @@
 <?php
 
+/* Define general error messages */
+define('ERROR_EXCEPTION', 'A fatal exception has occurred.');
+define('ERROR_PHP_FATAL_ERROR', 'A fatal PHP error has occurred.');
+define('ERROR_PHP_WARNING', 'A PHP warning has occurred.');
+define('ERROR_PHP_OTHER', 'A PHP error has occurred.');
+
 /* Logging function */
 function script_log($message, $level = LEVEL_DEBUG) {
   // Open log file for writing, in append mode
@@ -39,7 +45,8 @@ function error_page_handler ($code, $message, $file, $line, $context = NULL) {
     // Log the error
     script_log($message . ' in ' . $file . ' on ' . $line, LEVEL_ERROR);
     // Build the error page (get_defined_vars() is an array of the variables in the function)
-    build_error_page(ERROR_PHP_ERROR, array('error_info' => get_defined_vars()));
+    $error_code_msg = get_error_code_msg($code);
+    build_error_page($error_code_msg, array('error_info' => get_defined_vars()));
   }
   // Otherwise, use regular error handler
   else {
@@ -78,4 +85,17 @@ function get_caller($what = NULL)
     {
         return $previous_call;
     }   
+}
+
+function get_error_code_msg($error_code) {
+	if($error_code == E_ERROR) {
+       $error_code_msg = ERROR_PHP_FATAL_ERROR;
+	}
+	else if($error_code = E_WARNING) {
+		$error_code_msg = ERROR_PHP_WARNING;
+	}
+	else {
+		$error_code_msg = ERROR_PHP_OTHER;
+	}
+	return $error_code_msg;
 }
