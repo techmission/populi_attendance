@@ -158,8 +158,8 @@ function get_assignment_submission_info($assignmentid, $assignment_type, $person
   $submission_date_info = NULL;
   $grade_pct = NULL;
   $submission_info = array();
-  // TODO: add the minimums as well as the maximums
-  // 1. get submission dates
+
+  // 1. Get submission dates
   // if forum, get submission dates from discussion table
   if($assignment_type == 'DISCUSSION') {
     // pdo query (checked)
@@ -213,38 +213,60 @@ EOT;
     $submission_date_info = $stmt->fetch(PDO::FETCH_ASSOC);
   }
   
-  // 2. get the grade, if any
-  $qry = "select g.grade as pct from course_grades g where g.assignmentid = :assignmentid and g.studentid = :personid";
-  // log_query($qry, array('assignmentid' => $assignmentid, 'personid' => $personid));
-  $stmt = $DB->prepare($qry);
-  $stmt->bindValue('assignmentid', $assignmentid, PDO::PARAM_INT);
-  $stmt->bindValue('personid', $personid, PDO::PARAM_INT);
-  $stmt->execute();
-  // fetch a single row (need to be able to differentiate 0's from no grade at all)
-  $grade_result = $stmt->fetch(PDO::FETCH_ASSOC);
-  script_log(print_r($grade_result, TRUE), LEVEL_DEBUG);
-  
-  // 3. Prepare date objects for minimum and maximum dates
+  // 2. Prepare date objects for minimum and maximum dates
   // Put in NULL if no date (use Twig to format dates - see https://twig.symfony.com/doc/1.x/filters/date.html)
   $submission_info['min_submission_date'] = get_submission_date($submission_date_info, 'min');
   $submission_info['max_submission_date'] = get_submission_date($submission_date_info, 'max');
-
-  // 4. Format the grades
-  // Get a letter grade (including for F's), if there is a grade percent
-  if(is_array($grade_result) && count($grade_result) == 1 && $grade_result['pct'] >= 0) {
-    $grade_letter = get_grade_letter($grade_result['pct']);
-  }
-  //  Put in “--” if no submission, or no grade (for now, don’t differentiate between those cases)
-  else {
-    $grade_letter = "--";
-  }
-  $submission_info['grade_letter'] = $grade_letter;
   
-  // 5. Format the assignment type
+  // 3. get the grade, if any, and set by reference in the submission info array
+  $has_grade = get_grade_info($assignmentid, $personid, $submission_info);
+
+  // 4. Format the assignment type
   $submission_info['type_fmt'] = format_assignment_type($assignment_type);
 
   //  return the submission_info array: this array will be merged back into the assignment array  
   return $submission_info;  
+}
+
+/* Get grade info (pass submission_info array by reference to set variables */
+function get_grade_info($assignmentid, $personid, &$submission_info) {
+  if($submission_info['min_submission_date'] != NULL || $submission_info['max_submission_date'] != NULL) {
+	  $qry = "select g.grade as pct from course_grades g where g.assignmentid = :assignmentid and g.studentid = :personid";
+      // log_query($qry, array('assignmentid' => $assignmentid, 'personid' => $personid));
+      $stmt = $DB->prepare($qry);
+      $stmt->bindValue('assignmentid', $assignmentid, PDO::PARAM_INT);
+      $stmt->bindValue('personid', $personid, PDO::PARAM_INT);
+      $stmt->execute();
+      // fetch a single row (need to be able to differentiate 0's from no grade at all)
+      $grade_result = $stmt->fetch(PDO::FETCH_ASSOC);
+      script_log(print_r($grade_result, TRUE), LEVEL_DEBUG);
+
+      // Format the grades:
+      // Get a letter grade (including for F's), if there is a grade percent
+      if(is_array($grade_result) && count($grade_result) == 1 && $grade_result['pct'] >= 0) {
+        $grade_letter = get_grade_letter($grade_result['pct']);
+      }
+      //  Put in “--” if no grade
+	  // TODO: not sure if this actually works properly - ungraded assignments may always show as a 0 based on the query above
+      else {
+        $grade_letter = "--";
+      }
+  }
+  else {
+    $grade_letter = "--";
+  }
+  
+  $submission_info['grade_percent'] = $grade_result['pct'];
+  $submission_info['grade_letter'] = $grade_letter;
+  
+  if($grade_letter != "--") {
+    $has_grade = TRUE;
+  }
+  else {
+	$has_grade = FALSE;
+  }
+  
+  return $has_grade;
 }
 
 /**
