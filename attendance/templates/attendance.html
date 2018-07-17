@@ -32,7 +32,7 @@
 								      </td>
 									{% else %}
 									  <td class="submission-date">{{ assignment.max_submission_date is empty ? "--" : assignment.max_submission_date|localizeddate('long', 'short', NULL, 'America/Chicago') }}</td>
-									{% endif }
+									{% endif %}
 									</tr>
 								{% endfor %}
 							</table>
