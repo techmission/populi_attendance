@@ -344,7 +344,7 @@ function get_grade_info($assignmentid, $personid, &$submission_info) {
       // script_log(print_r($grade_result, TRUE), LEVEL_DEBUG);
 
       // Process the result:
-      if(is_array($grade_result) && count($grade_result) == 1) {
+      if(is_array($grade_result)) {
         // Get a letter grade (including for F's), if there is a grade percent
         if($grade_result['pct'] >= 0) {
           $grade_letter = get_grade_letter($grade_result['pct']);
