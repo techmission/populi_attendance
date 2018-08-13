@@ -33,6 +33,13 @@
 									    {% if show_grade_dates == true and assignment.grade_letter is not empty %}
 										  ({{ assignment.grade_date is empty ? "" : 
 										  assignment.grade_date|localizeddate('long', 'none', NULL, 'America/Chicago') }})
+                      {# calculate a date difference if needed: show_date_diff=1 #}
+                      {# see https://stackoverflow.com/questions/15657687 #}
+                      {{ set difference = date(assignment.max_submission_date).diff(assignment.grade_date }}
+                      {{ set daysLater = different.days }}
+                      {% if show_date_diff == true %}
+                      ({{ daysLater }} days later)
+                      {% endif %}
 										{% endif %}
 									</td>{% endif %}
 									{# only show both first and last if they are different values #}

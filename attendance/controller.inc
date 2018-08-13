@@ -67,7 +67,7 @@ function build_attendance_data() {
   else {
     $attendance_data = get_attendance_data($personid, $_GET['firstname'], $_GET['lastname']);
   }
-  
+
   // check whether to show the grades or not based on query string parameter
   if(isset($_GET['show_grades']) && $_GET['show_grades'] == TRUE) {
     $show_grades = TRUE;
@@ -75,7 +75,7 @@ function build_attendance_data() {
   else {
     $show_grades = FALSE;
   }
-  
+
   // check whether to show the grades or not based on query string parameter
   // only show the grade dates if the grades themselves are showing, to prevent an odd display
   if(isset($_GET['show_grade_dates']) && $_GET['show_grade_dates'] == TRUE && $show_grades == TRUE) {
@@ -84,13 +84,21 @@ function build_attendance_data() {
   else {
     $show_grade_dates = FALSE;
   }
+
+  // show days later if requested
+  if(isset($_GET['show_days_later']) && $show_grades == TRUE) {
+    $show_days_later = TRUE;
+  }
+  else {
+    $show_days_later = FALSE;
+  }
   
   // return to entry-point PHP page if there is valid attendance data, passing Twig variables
   // set to show grades and/or show grade dates if those was passed in the query string
   
   // TODO: more robust checking in is_attendance_data_valid
   if(is_attendance_data_valid($attendance_data)) {
-    $twig_vars = array('a' => $attendance_data, 'show_grades' => $show_grades, 'show_grade_dates' => $show_grade_dates);
+    $twig_vars = array('a' => $attendance_data, 'show_grades' => $show_grades, 'show_grade_dates' => $show_grade_dates, 'show_days_later' => $show_days_later);
     return $twig_vars;
   }
   // if not, return an error page
