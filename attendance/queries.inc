@@ -83,7 +83,7 @@ function get_attendance_data_by_course(&$attendance_data, $personid, $course_id)
       // https://stackoverflow.com/questions/3292044
       $assignments[$assignmentid] = $assignments[$assignmentid] + $submission_info;
     }
-    $attendance_data['terms'][0]['courses'][$courseid]['lessons'][$lessonid]['assignments'] = $assignments;
+    $attendance_data['terms'][0]['courses'][$course_id]['lessons'][$lessonid]['assignments'] = $assignments;
   }
 }
 
