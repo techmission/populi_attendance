@@ -36,7 +36,7 @@
                       {# calculate a date difference if needed: show_date_diff=1 #}
                       {# see https://stackoverflow.com/questions/15657687 #}
                       {% if show_days_later == true %}
-                      ({{ assignment.grade_date|time_diff(assignment_max_submission_date) }} days later)
+                      ({{ assignment.grade_date|time_diff(assignment.max_submission_date) }})
                       {% endif %}
 										{% endif %}
 									</td>{% endif %}
