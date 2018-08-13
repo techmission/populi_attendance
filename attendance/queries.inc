@@ -70,7 +70,7 @@ function get_attendance_data_by_course(&$attendance_data, $personid, $course_id)
 
   // Step 2: Get the lessons in the course
   $lessons = get_lessons_by_course($course_id);
-  $attendance_data['terms'][$termid]['courses'][$course_id]['lessons'] = $lessons;  
+  $attendance_data['terms'][0]['courses'][$course_id]['lessons'] = $lessons;  
 
   // Step 3: For each lesson get the assignments and add to array
   foreach($attendance_data['terms'][0]['courses'][$course_id]['lessons'] as $lessonid => $lessons) {
