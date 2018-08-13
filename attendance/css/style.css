@@ -114,11 +114,11 @@ table.assignments th.lesson-name {
 }
 
 td.assignment-name {
-  width: 500px;
+  width: 400px;
 }
 
 td.assignment-grade {
-  width: 100px;
+  width: 200px;
 }
 
 td.submission-date {
