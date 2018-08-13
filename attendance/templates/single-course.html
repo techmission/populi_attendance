@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>8 - {{ a.lastname|title }}, {{ a.firstname|title }} Course Attendance Documentation</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<h1>{{a.lastname|capitalize }}, {{a.firstname|capitalize}} Course Attendance Documentation</h1>
+
+{% if a.terms is not empty %}
+	{% for term in a.terms %}
+		<h2>{{ term.name }}</h2>
+		{% if term.courses is not empty %}
+			{% for course in term.courses %}
+				<h3>{{ course.name }}</h3>
+				{% if course.lessons is not empty %}
+					{% for lesson in course.lessons %}
+						{% if lesson.assignments is not empty %}
+							<table class="assignments">
+							{# show the week name unescaped, since it may have quotes or ampersands in the DB #}
+							<tr><th class="lesson-name" colspan="3">{{ lesson.name|raw }}</th></tr>
+								{% for assignment in lesson.assignments %}
+									<tr class="assignment">
+									{# show the assignment type and name (unescaped, since it may have quotes) #}
+									<td class="assignment-name">{{ assignment.type_fmt }}: {{ assignment.name|raw }}</td>
+									{# only show grades if passed in as query string parameter: show_grades=1 #}
+									{% if show_grades == true %}<td class="assignment-grade">Grade: {{ assignment.grade_letter }}</td>{% endif %}
+									{# only show both first and last if they are different values #}
+									{% if assignment.max_submission_date != assignment.min_submission_date %}
+									  <td class="submission-date">First: {{ assignment.min_submission_date is empty ? "--" : assignment.min_submission_date|localizeddate('long', 'short', NULL, 'America/Chicago') }}<br/>
+									                            Last: {{ assignment.max_submission_date is empty ? "--" : assignment.max_submission_date|localizeddate('long', 'short', NULL, 'America/Chicago') }}
+								      </td>
+									{% else %}
+									  <td class="submission-date">{{ assignment.max_submission_date is empty ? "--" : assignment.max_submission_date|localizeddate('long', 'short', NULL, 'America/Chicago') }}</td>
+									{% endif %}
+									</tr>
+								{% endfor %}
+							</table>
+						{% endif %}
+					{% endfor %}
+				{% endif %}
+			{% endfor %}
+		{% endif %}
+	{% endfor %}
+{% endif %}
+
+{# if set to debug show the full attendance array #}
+{% if constant('LOG_MODE') is constant('MODE_DEBUG') %}
+	<h2>Attendance Array</h2>
+	<pre>
+	{{ a_pre }}
+	</pre>
+{% endif %}
+{# Dump Twig variables here if set to debug Twig #}
+{% if constant('DEBUG_TWIG') == TRUE %}
+<h2>Twig Debug</h2>
+<pre>{{ vars }}</pre>
+{% endif %}
+
+</body>
+</html>
