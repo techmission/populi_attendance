@@ -158,16 +158,15 @@ EOT;
 /* Step 1 in single course version: Get the course by its id */
 function get_course_by_id($personid, $course_id) {
   global $DB;    
-  // pdo query (TODO)
+  // pdo query (TODO: test)
   $courses = NULL;
   $qry = <<<EOT
-SELECT c.instanceid, c.name FROM mv_courses_1718 c 
-JOIN mv_enrollments_1718 e ON c.instanceid = e.instanceid JOIN mv_students_1718 s ON s.personid = e.studentid 
-JOIN course_time_tracking ct ON ct.student_id = s.personid AND ct.course_instance_id = e.instanceid AND ct.owner_type = 'COURSE' 
-WHERE s.personid = :personid and c.instanceid = :course_id
-AND ct.last_update_time > c.add_drop_time 
-GROUP BY e.instanceid 
-ORDER BY c.name asc
+SELECT ci.instanceid, co.name
+FROM course_instances ci
+JOIN course_offering_catalog_courses co ON ci.instanceid = co.course_offering_id
+JOIN course_students cs ON cs.instanceid = ci.instanceid
+JOIN people p ON p.personid = cs.studentid
+WHERE p.personid = :personid AND ci.instanceid = :course_id
 EOT;
   $stmt = $DB->prepare($qry);
   // log_query($qry, array('personid' => $personid, 'termid' => $termid));
