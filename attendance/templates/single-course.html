@@ -2,15 +2,14 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>8 - {{ a.lastname|title }}, {{ a.firstname|title }} Course Attendance Documentation</title>
+<title>{{ a.lastname|title }}, {{ a.firstname|title }} Attendance and Grading</title>
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-<h1>{{a.lastname|capitalize }}, {{a.firstname|capitalize}} Course Attendance Documentation</h1>
+<h1>{{a.lastname|capitalize }}, {{a.firstname|capitalize}}</h1>
 
 {% if a.terms is not empty %}
 	{% for term in a.terms %}
-		<h2>{{ term.name }}</h2>
 		{% if term.courses is not empty %}
 			{% for course in term.courses %}
 				<h3>{{ course.name }}</h3>
@@ -25,7 +24,17 @@
 									{# show the assignment type and name (unescaped, since it may have quotes) #}
 									<td class="assignment-name">{{ assignment.type_fmt }}: {{ assignment.name|raw }}</td>
 									{# only show grades if passed in as query string parameter: show_grades=1 #}
-									{% if show_grades == true %}<td class="assignment-grade">Grade: {{ assignment.grade_letter }}</td>{% endif %}
+									{% if show_grades == true %}
+									  <td class="assignment-grade">
+									    Grade: {{ assignment.grade_letter }}
+									    {# only show grade dates if passed in query string parameter: show_grade_dates=1
+										   and a grade is actually given #}
+										{# TODO: will need to debug what these end up looking like #}   
+									    {% if show_grade_dates == true and assignment.grade_letter is not empty %}
+										  ({{ assignment.grade_date is empty ? "" : 
+										  assignment.grade_date|localizeddate('long', 'short', NULL, 'America/Chicago') }})
+										{% endif %}
+									</td>{% endif %}
 									{# only show both first and last if they are different values #}
 									{% if assignment.max_submission_date != assignment.min_submission_date %}
 									  <td class="submission-date">First: {{ assignment.min_submission_date is empty ? "--" : assignment.min_submission_date|localizeddate('long', 'short', NULL, 'America/Chicago') }}<br/>
