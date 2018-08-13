@@ -311,8 +311,8 @@ EOT;
   
   // 2. Prepare date objects for minimum and maximum dates
   // Put in NULL if no date (use Twig to format dates - see https://twig.symfony.com/doc/1.x/filters/date.html)
-  $submission_info['min_submission_date'] = get_submission_date($submission_date_info, 'min');
-  $submission_info['max_submission_date'] = get_submission_date($submission_date_info, 'max');
+  $submission_info['min_submission_date'] = format_datetime($submission_date_info['min_added_time']);
+  $submission_info['max_submission_date'] = format_datetime($submission_date_info['max_added_time']);
   
   // 3. get the grade and grade date, if any, and set by reference in the submission info array
   $has_grade = get_grade_info($assignmentid, $personid, $submission_info);
@@ -334,8 +334,7 @@ function get_grade_info($assignmentid, $personid, &$submission_info) {
 
   // If the assignment has a submission date, then look up grade info
   if($submission_info['min_submission_date'] != NULL || $submission_info['max_submission_date'] != NULL) {
-      // TODO:  
-      $qry = "select g.grade as pct from course_grades g where g.assignmentid = :assignmentid and g.studentid = :personid";
+      $qry = "select g.grade as pct, g.updated_at from course_grades g where g.assignmentid = :assignmentid and g.studentid = :personid";
       // log_query($qry, array('assignmentid' => $assignmentid, 'personid' => $personid));
       $stmt = $DB->prepare($qry);
       $stmt->bindValue('assignmentid', $assignmentid, PDO::PARAM_INT);
@@ -345,10 +344,14 @@ function get_grade_info($assignmentid, $personid, &$submission_info) {
       $grade_result = $stmt->fetch(PDO::FETCH_ASSOC);
       // script_log(print_r($grade_result, TRUE), LEVEL_DEBUG);
 
-      // Format the grades:
-      // Get a letter grade (including for F's), if there is a grade percent
-      if(is_array($grade_result) && count($grade_result) == 1 && $grade_result['pct'] >= 0) {
-        $grade_letter = get_grade_letter($grade_result['pct']);
+      // Process the result:
+      if(is_array($grade_result) && count($grade_result) == 1) {
+        // Get a letter grade (including for F's), if there is a grade percent
+        if($grade_result['pct'] >= 0) {
+          $grade_letter = get_grade_letter($grade_result['pct']);
+        }
+        // Format the date graded
+        $grade_date = format_datetime($grade_result['updated_at']);
       }
       //  Put in “--” if no grade (ungraded by professor) - for error checking on our part
       // This should only be OK on courses that are unfinalized
@@ -366,7 +369,7 @@ function get_grade_info($assignmentid, $personid, &$submission_info) {
   
   $submission_info['grade_percent'] = $grade_result['pct'];
   $submission_info['grade_letter'] = $grade_letter;
-  // TODO: Grade Date will be a PHP DateTime object
+  // PHP DateTime object
   $submission_info['grade_date'] = $grade_date;
   
   if($grade_letter != "--") {
@@ -383,32 +386,25 @@ function get_grade_info($assignmentid, $personid, &$submission_info) {
 /**
   Helper functions 
  */
- 
-function get_submission_date($submission_date_info, $date_type) {
+
+/** 
+ Turns a text string in a date format into a DateTime object in the proper timezone
+ This object will then be rendered in the Populi Twig template 
+*/
+function format_datetime($date_string) {
   $dt = NULL;
-  if($date_type == 'min') {
-    $array_source = 'min_added_time';
-  }
-  else {
-    $array_source = 'max_added_time';
-  }
   
-  // if there is no date to operate on, return this as NULL
-  if(!is_array($submission_date_info) || $submission_date_info[$array_source] == NULL) {
-    $dt = NULL;
-  }
-  else {
-    // Create DateTime object in order to set timezone
-    // Need to define as UTC first since that's what Populi stores as.
-    $dt = new DateTime($submission_date_info[$array_source], new DateTimeZone('UTC'));
-    // Set to settings-defined timezone.
-    // Note that this needs to be changed here even though display layer requests to show in same TimeZone
-    $dt->setTimeZone(new DateTimeZone(CUR_TZ));
-  }
+  // Create DateTime object in order to set timezone
+  // Need to define as UTC first since that's what Populi stores as.
+  $dt = new DateTime($date_string, new DateTimeZone('UTC'));
+  // Set to settings-defined timezone.
+  // Note that this needs to be changed here even though display layer requests to show in same TimeZone
+  $dt->setTimeZone(new DateTimeZone(CUR_TZ));
+
   return $dt;
 }
 
-/* Translate a grade into a letter grade */
+/* Translate a percent grade into a letter grade using the Populi-defined grade scale */
 function get_grade_letter($grade_pct) {
   global $DB;
   $grade_letter = NULL;
@@ -430,9 +426,9 @@ EOT;
        $grade_letter = $result['letter'];
        break;
     }
-	else if($grade_pct == 0) {
-	  $grade_letter = 'F';
-	}
+    else if($grade_pct == 0) {
+      $grade_letter = 'F';
+    }
   }
   return $grade_letter;
 }
@@ -460,7 +456,7 @@ function format_assignment_type($assignment_type) {
   return $fmt_assignment_type;
 }
 
-/* Validates whether data is in the correct format to render */
+/* Validates whether data is in the correct format to render - stub so far */
 function is_attendance_data_valid($attendance_data) {
   if(is_array($attendance_data) && count($attendance_data) > 0) {
     return TRUE;
@@ -472,7 +468,7 @@ function is_attendance_data_valid($attendance_data) {
   // for overall data
 }
 
-/* Validates a Populi ID */
+/* Validates a Populi ID - stub so far, may not really be needed */
 function is_populi_id($id) {
   if(is_numeric($id) && $id > 0) {
     return TRUE;
