@@ -35,9 +35,9 @@
 										  assignment.grade_date|localizeddate('long', 'none', NULL, 'America/Chicago') }})
                       {# calculate a date difference if needed: show_date_diff=1 #}
                       {# see https://stackoverflow.com/questions/15657687 #}
-                      {{ set difference = date(assignment.max_submission_date).diff(assignment.grade_date }}
+                      {{ set difference = date(assignment.max_submission_date).diff(assignment.grade_date) }}
                       {{ set daysLater = different.days }}
-                      {% if show_date_diff == true %}
+                      {% if show_days_later == true %}
                       ({{ daysLater }} days later)
                       {% endif %}
 										{% endif %}
