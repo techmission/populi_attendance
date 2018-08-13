@@ -44,7 +44,8 @@ function bootstrap() {
 /* Function to build the attendance page */
 function build_attendance_data() {
   $attendance_data = array();
-  $personid = '';
+  $personid = NULL;
+  $courseid = NULL;
   $output = '';
   if(!empty($_GET['firstname'] && $_GET['lastname'])) {
     $personid = get_personid($_GET['firstname'], $_GET['lastname']);
@@ -59,7 +60,13 @@ function build_attendance_data() {
     build_error_page(ERROR_INVALID_INPUT, array('get_params' => $get_array_sanitized));
   }
   
-  $attendance_data = get_attendance_data($personid, $_GET['firstname'], $_GET['lastname']);
+  // If a course id is specified in the query string, only load attendance data for that course
+  if(isset($_GET['course_id']) && is_numeric($_GET['course_id'])) {
+    $attendance_data = get_attendance_data($personid, $_GET['firstname'], $_GET['lastname'], $_GET['course_id']);
+  }
+  else {
+    $attendance_data = get_attendance_data($personid, $_GET['firstname'], $_GET['lastname']);
+  }
   
   // check whether to show the grades or not based on query string parameter
   if(isset($_GET['show_grades']) && $_GET['show_grades'] == TRUE) {
@@ -69,13 +76,22 @@ function build_attendance_data() {
     $show_grades = FALSE;
   }
   
+  // check whether to show the grades or not based on query string parameter
+  // only show the grade dates if the grades themselves are showing, to prevent an odd display
+  if(isset($_GET['show_grade_dates']) && $_GET['show_grade_dates'] == TRUE && $show_grades == TRUE) {
+    $show_grade_dates = TRUE;
+  }
+  else {
+    $show_grade_dates = FALSE;
+  }
+  
   // return to entry-point PHP page if there is valid attendance data, passing Twig variables
-  // set to show grades if that was passed in the query string
+  // set to show grades and/or show grade dates if those was passed in the query string
   
   // TODO: more robust checking in is_attendance_data_valid
   if(is_attendance_data_valid($attendance_data)) {
-    $twig_vars = array('a' => $attendance_data, 'show_grades' => $show_grades);
-	return $twig_vars;
+    $twig_vars = array('a' => $attendance_data, 'show_grades' => $show_grades, 'show_grade_dates' => $show_grade_dates);
+    return $twig_vars;
   }
   // if not, return an error page
   else {
@@ -95,14 +111,14 @@ function build_error_page($error_msg, $vars) {
   }
   $twig_vars = array('error_msg' => $error_msg, 'log_mode' => $log_mode);
   if(isset($vars['error_info'])) {
-	if(is_array($vars['error_info'])) {
-	  if(isset($vars['error_info']['TWIG'])) {
-	    unset($vars['error_info']['TWIG']);
-	  }
-	  $vars['error_info'] = print_r($vars['error_info'], TRUE);
-	}
+    if(is_array($vars['error_info'])) {
+      if(isset($vars['error_info']['TWIG'])) {
+        unset($vars['error_info']['TWIG']);
+      }
+      $vars['error_info'] = print_r($vars['error_info'], TRUE);
+    }
     $twig_vars['error_info'] = $vars['error_info'];
-	unset($vars['error_info']);
+    unset($vars['error_info']);
   }
   // get a rendered array of the vars as a variable to show
   $vars_dump = print_r($vars, TRUE);

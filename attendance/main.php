@@ -22,17 +22,17 @@ if(!isset($_GET['key']) && $_GET['key'] != GUID) {
   echo $template->render(array('vars' => $VARS));
 }
 
-// Build the attendance data array and accompanying settings for rendering via Twig; uses data from $_GET
-// Current setting is ?show_grades=1 or 0 to show the grades as well as submission dates
-// Uses a different builder function depending on whether or not there is a Populi course id passed in $_GET
+// Uses a different rendering template depending on whether or not there is a Populi course id passed in query string parameter
 if(isset($_GET['course_id']) && is_numeric($_GET['course_id'])) {
-  $twig_vars = build_single_course_attendance_data();
   $template_file = TEMPLATE_SINGLE_COURSE;
 }
 else {
-  $twig_vars = build_attendance_data();
   $template_file = TEMPLATE_ATTENDANCE;
 }
+
+// Build the attendance data array and accompanying settings for rendering via Twig; uses data from query string parameters
+// Current setting is ?show_grades=1 or 0 to show the grades as well as submission dates
+$twig_vars = build_attendance_data();
 
 /* Add debugging variables to Twig template */
 // Preformatted attendance array

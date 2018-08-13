@@ -1,16 +1,31 @@
 <?php
 
-/* Main business logic function: queries Salesforce and populates the attendance data array */
-function get_attendance_data($personid, $firstname, $lastname) {
+/* Main business logic function: queries Populi and populates the attendance data array */
+/* Delegates to two different functions based on whether a single course is requested or not */
+function get_attendance_data($personid, $firstname, $lastname, $course_id = NULL) {
   $attendance_data = array();
   
-  // Add personid (for debugging)
+  // Add personid and course_id (for debugging)
   $attendance_data['personid'] = $personid;
+  $attendance_data['course_id'] = $course_id;
   
   // Add firstname and lastname (used in heading)
   $attendance_data['firstname'] = $firstname;
   $attendance_data['lastname'] = $lastname;
   
+  if($course_id == NULL) {
+    get_attendance_data_all_terms($attendance_data);
+  }
+  else {
+    get_attendance_data_by_course($attendance_data, $personid, $course_id);
+  }
+  
+  return $attendance_data;
+}
+
+/* Build the attendance data array for all terms -
+   passed by reference so it can modify the array from the calling function */
+function get_attendance_data_all_terms(&$attendance_data) {
   // Step 1: Get terms in which person was enrolled
   // This will be the base level of the attendance data array
   $terms = get_terms_by_person($personid);
@@ -29,7 +44,7 @@ function get_attendance_data($personid, $firstname, $lastname) {
       // Step 4: For each lesson get the assignments and add to array
       foreach($attendance_data['terms'][$termid]['courses'][$courseid]['lessons'] as $lessonid => $lessons) {
         $assignments = get_assignments_by_lesson($lessonid);
-		// script_log(print_r($assignments, TRUE), LEVEL_DEBUG);
+        // script_log(print_r($assignments, TRUE), LEVEL_DEBUG);
          // Step 5: For each assignment, get the submission info and add to array
         foreach($assignments as $assignmentid => $assignment) {
           $submission_info = get_assignment_submission_info($assignmentid, $assignment['type'], $personid);
@@ -37,15 +52,39 @@ function get_attendance_data($personid, $firstname, $lastname) {
           // https://stackoverflow.com/questions/3292044
           $assignments[$assignmentid] = $assignments[$assignmentid] + $submission_info;
         }
-		//script_log(print_r($assignments, TRUE), LEVEL_DEBUG);
-		// Testing the format on an assignment (debug only)
-		//$assignments = array(array('type_fmt' => 'Assignment', 'name' => 'test', 'max_submission_date' => '2017-09-09 18:26:38', 'grade_letter' => 'A'));
+        //script_log(print_r($assignments, TRUE), LEVEL_DEBUG);
+        // Testing the format on an assignment (debug only)
+        //$assignments = array(array('type_fmt' => 'Assignment', 'name' => 'test', 'max_submission_date' => '2017-09-09 18:26:38', 'grade_letter' => 'A'));
         $attendance_data['terms'][$termid]['courses'][$courseid]['lessons'][$lessonid]['assignments'] = $assignments;
       }
     }
   }
-  
-  return $attendance_data;
+}
+
+/* Build the attendance data array for a single course -
+   passed by reference so it can modify the array from the calling function */
+function get_attendance_data_by_course(&$attendance_data, $personid, $course_id) {
+  // To simplify basing template off existing template, will create a "dummy" structure that matches
+  // Step 1: Get the information on the course itself, including the name
+  $attendance_data['terms'][0]['courses'] = get_course_by_id($personid, $course_id);
+
+  // Step 2: Get the lessons in the course
+  $lessons = get_lessons_by_course($course_id);
+  $attendance_data['terms'][$termid]['courses'][$course_id]['lessons'] = $lessons;  
+
+  // Step 3: For each lesson get the assignments and add to array
+  foreach($attendance_data['terms'][0]['courses'][$course_id]['lessons'] as $lessonid => $lessons) {
+    $assignments = get_assignments_by_lesson($lessonid);
+    // script_log(print_r($assignments, TRUE), LEVEL_DEBUG);
+    // Step 4: For each assignment, get the submission info and add to array
+    foreach($assignments as $assignmentid => $assignment) {
+      $submission_info = get_assignment_submission_info($assignmentid, $assignment['type'], $personid);
+      // add the array of assignment info and submission info together, preserving keys
+      // https://stackoverflow.com/questions/3292044
+      $assignments[$assignmentid] = $assignments[$assignmentid] + $submission_info;
+    }
+    $attendance_data['terms'][$termid]['courses'][$courseid]['lessons'][$lessonid]['assignments'] = $assignments;
+  }
 }
 
 /* Step 0: Get a Populi student ID based on firstname and lastname */
@@ -112,6 +151,31 @@ EOT;
   $stmt->bindValue('termid', $termid, PDO::PARAM_INT);
   $stmt->execute();
   // fetch array of courses with courseids as keys, with names, sorted by name
+  $courses = $stmt->fetchAll(PDO::FETCH_UNIQUE);
+  return $courses;
+}
+
+/* Step 1 in single course version: Get the course by its id */
+function get_course_by_id($personid, $course_id) {
+  global $DB;    
+  // pdo query (TODO)
+  $courses = NULL;
+  $qry = <<<EOT
+SELECT c.instanceid, c.name FROM mv_courses_1718 c 
+JOIN mv_enrollments_1718 e ON c.instanceid = e.instanceid JOIN mv_students_1718 s ON s.personid = e.studentid 
+JOIN course_time_tracking ct ON ct.student_id = s.personid AND ct.course_instance_id = e.instanceid AND ct.owner_type = 'COURSE' 
+WHERE s.personid = :personid and c.instanceid = :course_id
+AND ct.last_update_time > c.add_drop_time 
+GROUP BY e.instanceid 
+ORDER BY c.name asc
+EOT;
+  $stmt = $DB->prepare($qry);
+  // log_query($qry, array('personid' => $personid, 'termid' => $termid));
+  $stmt->bindValue('personid', $personid, PDO::PARAM_INT);
+  $stmt->bindValue('course_id', $course_id, PDO::PARAM_INT);
+  $stmt->execute();
+  // fetch array of courses with courseids as keys, with names, sorted by name
+  // TODO: see if I should only fetch first one
   $courses = $stmt->fetchAll(PDO::FETCH_UNIQUE);
   return $courses;
 }
@@ -250,7 +314,7 @@ EOT;
   $submission_info['min_submission_date'] = get_submission_date($submission_date_info, 'min');
   $submission_info['max_submission_date'] = get_submission_date($submission_date_info, 'max');
   
-  // 3. get the grade, if any, and set by reference in the submission info array
+  // 3. get the grade and grade date, if any, and set by reference in the submission info array
   $has_grade = get_grade_info($assignmentid, $personid, $submission_info);
 
   // 4. Format the assignment type
@@ -263,8 +327,15 @@ EOT;
 /* Get grade info (pass submission_info array by reference to set variables */
 function get_grade_info($assignmentid, $personid, &$submission_info) {
   global $DB;
+  
+  // Set null values for variables used later in submission info on grades
+  $grade_letter = NULL; // letter grade
+  $grade_date = NULL;   // date graded
+
+  // If the assignment has a submission date, then look up grade info
   if($submission_info['min_submission_date'] != NULL || $submission_info['max_submission_date'] != NULL) {
-	  $qry = "select g.grade as pct from course_grades g where g.assignmentid = :assignmentid and g.studentid = :personid";
+      // TODO:  
+      $qry = "select g.grade as pct from course_grades g where g.assignmentid = :assignmentid and g.studentid = :personid";
       // log_query($qry, array('assignmentid' => $assignmentid, 'personid' => $personid));
       $stmt = $DB->prepare($qry);
       $stmt->bindValue('assignmentid', $assignmentid, PDO::PARAM_INT);
@@ -280,27 +351,32 @@ function get_grade_info($assignmentid, $personid, &$submission_info) {
         $grade_letter = get_grade_letter($grade_result['pct']);
       }
       //  Put in “--” if no grade (ungraded by professor) - for error checking on our part
-	  // This should only be OK on courses that are unfinalized
+      // This should only be OK on courses that are unfinalized
       else {
         $grade_letter = "--";
       }
   }
   // If no submission, indicate a 0 for that
-  // Note that it appears that all assignments, even unsubmitted, get a 0 entered at the end of the term, so this is a presumption that non-submits are 0's
+  // Note that it appears that all assignments, even unsubmitted, get a 0 entered at the end of the term, at least in our school,
+  //  so this is a presumption that non-submits are 0's
   else {
     $grade_letter = "Non-Submitted (F)";
+    // In this case, grade date remains NULL - will need to handle that in template by a conditional.
   }
   
   $submission_info['grade_percent'] = $grade_result['pct'];
   $submission_info['grade_letter'] = $grade_letter;
+  // TODO: Grade Date will be a PHP DateTime object
+  $submission_info['grade_date'] = $grade_date;
   
   if($grade_letter != "--") {
     $has_grade = TRUE;
   }
   else {
-	$has_grade = FALSE;
+    $has_grade = FALSE;
   }
-  
+
+  // Note that the calling array has been modified by reference; this return value is just a flag
   return $has_grade;
 }
 
