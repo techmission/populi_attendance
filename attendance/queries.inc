@@ -92,7 +92,7 @@ function get_personid($firstname, $lastname) {
   global $DB;
   $personid = NULL;
   // pdo query (checked)
-  $qry = 'SELECT personid FROM mv_students_1718 WHERE firstname = :firstname AND lastname = :lastname LIMIT 1';  
+  $qry = 'SELECT p.personid FROM people p WHERE p.firstname = :firstname AND p.lastname = :lastname LIMIT 1';
   $stmt = $DB->prepare($qry);
   // log_query($qry, array('firstname' => $firstname, 'lastname' => $lastname));
   $stmt->bindValue('firstname', $firstname, PDO::PARAM_STR);
@@ -158,7 +158,7 @@ EOT;
 /* Step 1 in single course version: Get the course by its id */
 function get_course_by_id($personid, $course_id) {
   global $DB;    
-  // pdo query (TODO: test)
+  // pdo query (tested)
   $courses = NULL;
   $qry = <<<EOT
 SELECT ci.instanceid, co.name
