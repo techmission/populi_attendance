@@ -159,6 +159,12 @@ EOT;
 function get_course_by_id($personid, $course_id) {
   global $DB;    
   // pdo query (tested)
+
+  // note that on populi_db3, course_offering_catalog_courses was not created by the Python script csv2mysql
+  // later I will need to debug that:
+  // for now, can use
+  // create table populi_db3.course_offering_catalog_courses as select * from populi_db2.course_offering_catalog_courses;
+  // as per https://stackoverflow.com/questions/13620189exit
   $courses = NULL;
   $qry = <<<EOT
 SELECT ci.instanceid, co.name
